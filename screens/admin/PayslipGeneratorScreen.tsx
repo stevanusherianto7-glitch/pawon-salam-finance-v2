@@ -1,11 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import html2canvas from 'html2canvas';
-onClick = { handleDownloadPDF }
-className = "bg-gradient-to-r from-gray-800 to-gray-900 hover:from-black hover:to-black text-white font-bold py-2.5 px-6 rounded-xl transition-all transform hover:scale-105 duration-300 shadow-lg flex items-center gap-2"
-    >
-        📥 Download PDF
-    </button >
-</div >
+import jsPDF from 'jspdf';
 import { ArrowLeft, ChevronDown } from 'lucide-react';
 import { GlassDatePicker } from '../../components/ui/GlassDatePicker';
 import { useEmployeeStore } from '../../store/employeeStore';
