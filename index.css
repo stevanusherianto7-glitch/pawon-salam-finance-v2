@@ -124,24 +124,28 @@
     @apply bg-black/20 backdrop-blur-xl border border-white/10;
   }
 
-  /* Custom Scrollbar */
+  /* Custom Scrollbar untuk Content Area */
   .scrollbar-thin::-webkit-scrollbar {
-    display: block;
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    /* Sangat tipis */
   }
 
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
+    /* Track transparan */
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: rgba(156, 163, 175, 0.5);
-    border-radius: 3px;
+    /* Abu-abu transparan */
+    border-radius: 20px;
+    /* Rounded edges */
   }
 
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(107, 114, 128, 0.8);
+  /* Firefox support */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
   }
 }
 

@@ -247,21 +247,30 @@ const App = () => {
   return (
     <ErrorBoundary>
       <OfflineBanner />
-      <div className="h-full w-full bg-gray-200 flex justify-center font-sans overflow-hidden print:overflow-visible print:bg-white print:h-auto print:block print:static" style={{ backgroundColor: '#e5e7eb' }}>
+      {/* GLOBAL LAYOUT LOCK */}
+      <div className="h-[100dvh] w-full bg-gray-200 flex justify-center font-sans overflow-hidden print:overflow-visible print:bg-white print:h-auto print:block print:static" style={{ backgroundColor: '#e5e7eb' }}>
         <div className="w-full max-w-md bg-gray-50 h-full relative flex flex-col border-x border-gray-200 shadow-2xl overflow-hidden print:max-w-none print:w-full print:h-auto print:overflow-visible print:border-none print:shadow-none print:block print:static">
-          <ImpersonationBanner />
-          <ToastContainer />
-          <SpecialNotificationBanner />
-          <PWAInstallPrompt />
-          <OfflineIndicator />
 
-          <div className={`flex-1 overflow-y-auto overscroll-contain pb-[calc(8rem+env(safe-area-inset-bottom))] ${isImpersonating ? 'pt-16' : ''} print:overflow-visible print:h-auto print:pb-0 print:static`} id="main-content">
+          {/* HEADER SECTION (Sticky Top) */}
+          <div className="z-50 sticky top-0 shrink-0 bg-gray-50/95 backdrop-blur-sm">
+            <ImpersonationBanner />
+            <ToastContainer />
+            <SpecialNotificationBanner />
+            <PWAInstallPrompt />
+            <OfflineIndicator />
+          </div>
+
+          {/* CONTENT AREA (Scrollable) */}
+          <div className={`flex-1 overflow-y-auto overscroll-y-contain scrollbar-thin relative ${isImpersonating ? '' : ''} print:overflow-visible print:h-auto print:pb-0 print:static`} id="main-content">
             {renderScreen()}
           </div>
 
-          <div className="print:hidden">
+          {/* FOOTER SECTION (Sticky Bottom) */}
+          <div className="z-50 sticky bottom-0 shrink-0 print:hidden pointer-events-none">
             {isAuthenticated && user && !exclusionList.includes(currentScreen) && (
-              <BottomTab role={user.role} currentScreen={currentScreen} onNavigate={handleNavigate} />
+              <div className="pointer-events-auto">
+                <BottomTab role={user.role} currentScreen={currentScreen} onNavigate={handleNavigate} />
+              </div>
             )}
           </div>
         </div>

@@ -68,8 +68,8 @@ export const BottomTab: React.FC<BottomTabProps> = ({ role, currentScreen, onNav
   ].includes(role);
 
   return (
-    <div className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-4 right-4 z-50 flex justify-center">
-      <div className="bg-emerald-800/50 backdrop-blur-xl border border-emerald-500/20 shadow-2xl shadow-black/40 px-4 h-20 rounded-[2rem] flex justify-around items-center w-full max-w-sm">
+    <div className="w-full flex justify-center pb-6 pt-2 px-4 bg-gradient-to-t from-gray-50/80 to-transparent backdrop-blur-[2px]">
+      <div className="bg-emerald-800/90 backdrop-blur-xl border border-emerald-500/20 shadow-2xl shadow-black/40 px-4 h-20 rounded-[2rem] flex justify-around items-center w-full max-w-sm">
         {!isManagement ? (
           <>
             {renderIcon('dashboard', Home, 'Home')}
