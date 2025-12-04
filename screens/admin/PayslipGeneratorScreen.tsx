@@ -329,7 +329,7 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                     </div>
 
                     {/* 2. SCROLLABLE CONTENT */}
-                    <div className="flex-1 overflow-y-auto p-6 bg-gray-50/50">
+                    <div className="flex-1 overflow-y-auto p-6 bg-gray-50/50 scrollbar-thin">
                         <div className="space-y-6">
                             <div>
                                 <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Data Penerima</h3>
