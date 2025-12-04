@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { useEmployeeStore } from '../../store/employeeStore';
-import { LogOut, Calendar, ClipboardList, TrendingUp, DollarSign, Utensils, Megaphone, Users, ChevronRight, Clock, UserPlus, Eye, Banknote, Camera, CheckSquare, TrendingDown, PieChart, AlertTriangle, Activity, Star, Crown, Filter, Download, Award, Trophy, FilePlus, Settings, Package } from 'lucide-react';
+import { LogOut, Calendar, ClipboardList, TrendingUp, DollarSign, Utensils, Megaphone, Users, ChevronRight, Clock, UserPlus, Eye, Banknote, Camera, CheckSquare, TrendingDown, PieChart, AlertTriangle, Activity, Star, Crown, Filter, Download, Award, Trophy, FilePlus, Settings, Package, Wallet } from 'lucide-react';
 import { attendanceApi, employeeApi, jobdeskApi, performanceApi, ownerApi } from '../../services/api';
 import { AttendanceLog, AttendanceStatus, UserRole, Employee, EmployeeArea, OwnerDashboardData, TrendData, DashboardAnalytics, EmployeeOfTheMonth } from '../../types';
 import { colors } from '../../theme/colors';
@@ -268,15 +268,16 @@ export const AdminDashboardScreen: React.FC<AdminDashboardProps> = ({ onNavigate
                         </div>
                     </div>
 
-                    {/* Quick Actions Grid - PREMIUM GLASS STYLE */}
+                    {/* Quick Actions Grid - PREMIUM GLASS STYLE (WAWAN CLONE) */}
                     <div className="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-100">
-                        <div className="grid grid-cols-4 gap-3">
-                            <button onClick={() => onNavigate && onNavigate('certificateManager')} className="flex flex-col items-center gap-1.5 group">
-                                <div className="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center border border-orange-100 group-active:scale-95 transition-all shadow-sm">
-                                    <Award size={18} />
-                                </div>
-                                <span className="text-[9px] font-bold text-gray-600 text-center leading-tight">Penghargaan</span>
-                            </button>
+                        <h3 className="font-bold text-gray-800 mb-2.5 text-xs uppercase tracking-wider">Menu HRD</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                            <PremiumGlassCard title="Payroll" subtitle="Slip Gaji" icon={Wallet} onClick={() => onNavigate && onNavigate('payslipGenerator')} themeColor="green" />
+                            <PremiumGlassCard title="Shift" subtitle="Jadwal Staff" icon={Calendar} onClick={() => onNavigate && onNavigate('shiftScheduler')} themeColor="blue" />
+                            <PremiumGlassCard title="SP/Coach" subtitle="Catatan HR" icon={AlertTriangle} onClick={() => onNavigate && onNavigate('hrSpCoachingForm')} themeColor="red" />
+                            <PremiumGlassCard title="Cuti" subtitle="Izin Karyawan" icon={FilePlus} onClick={() => onNavigate && onNavigate('adminLeaveRequest')} themeColor="teal" />
+                            <PremiumGlassCard title="Monitoring" subtitle="Checklist & Jobdesk" icon={CheckSquare} onClick={() => onNavigate && onNavigate('hrDailyMonitorHub')} themeColor="orange" />
+                            <PremiumGlassCard title="Penghargaan" subtitle="Sertifikat" icon={Award} onClick={() => onNavigate && onNavigate('certificateManager')} themeColor="purple" />
                         </div>
                     </div>
 
