@@ -1,6 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { ArrowLeft, ChevronDown } from 'lucide-react';
 import { GlassDatePicker } from '../../components/ui/GlassDatePicker';
+import { useEmployeeStore } from '../../store/employeeStore';
+import { UserRole, Employee, EmployeeArea } from '../../types';
 
 // --- INTERFACES ---
 
@@ -13,6 +15,8 @@ interface PayrollData {
     employeeName: string;
     nik: string;
     position: string;
+    department: string;
+    status: string;
     basicSalary: number;
     allowances: number;
     positionAllowance: number;
@@ -157,6 +161,7 @@ const PayrollInput: React.FC<{
 
 export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
     const printRef = useRef<HTMLDivElement>(null);
+    const { employees, fetchEmployees } = useEmployeeStore();
 
     // State for the date picker
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -166,6 +171,8 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
         employeeName: '',
         nik: '',
         position: '',
+        department: '',
+        status: '',
         basicSalary: 0,
         allowances: 0,
         positionAllowance: 0,
@@ -176,6 +183,12 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
     });
 
     const [showSlip, setShowSlip] = useState(false);
+
+    useEffect(() => {
+        if (employees.length === 0) {
+            fetchEmployees();
+        }
+    }, [employees.length, fetchEmployees]);
 
     // Update formData.month when selectedDate changes
     useEffect(() => {
@@ -189,6 +202,71 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
             ...prev,
             [name]: type === 'number' ? parseFloat(value) || 0 : value,
         }));
+    };
+
+    // Categorize Employees
+    const { managementEmployees, staffEmployees } = useMemo(() => {
+        const management: Employee[] = [];
+        const staff: Employee[] = [];
+
+        employees.forEach(emp => {
+            if ([UserRole.HR_MANAGER, UserRole.RESTAURANT_MANAGER, UserRole.FINANCE_MANAGER, UserRole.MARKETING_MANAGER, UserRole.BUSINESS_OWNER, UserRole.SUPER_ADMIN].includes(emp.role)) {
+                management.push(emp);
+            } else {
+                staff.push(emp);
+            }
+        });
+
+        return { managementEmployees: management, staffEmployees: staff };
+    }, [employees]);
+
+    const handleEmployeeSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const empId = e.target.value;
+        const employee = employees.find(emp => emp.id === empId);
+
+        if (employee) {
+            // Infer Department and Status
+            let department = 'Operasional';
+            let status = 'Karyawan Tetap';
+
+            if ([UserRole.HR_MANAGER, UserRole.RESTAURANT_MANAGER, UserRole.FINANCE_MANAGER, UserRole.MARKETING_MANAGER, UserRole.BUSINESS_OWNER, UserRole.SUPER_ADMIN].includes(employee.role)) {
+                status = 'Management';
+                if (employee.role === UserRole.HR_MANAGER) department = 'Human Resources';
+                if (employee.role === UserRole.FINANCE_MANAGER) department = 'Finance & Accounting';
+                if (employee.role === UserRole.MARKETING_MANAGER) department = 'Marketing & Sales';
+                if (employee.role === UserRole.RESTAURANT_MANAGER) department = 'Restaurant Management';
+            } else {
+                if (employee.area === EmployeeArea.BOH) department = 'Kitchen (BOH)';
+                if (employee.area === EmployeeArea.FOH) department = 'Service (FOH)';
+                if (employee.area === EmployeeArea.MANAGEMENT) department = 'Management';
+            }
+
+            setFormData(prev => ({
+                ...prev,
+                employeeName: employee.name,
+                nik: employee.id || 'N/A',
+                position: getRoleDisplayName(employee.role, employee.area),
+                department: department,
+                status: status,
+            }));
+        }
+    };
+
+    const getRoleDisplayName = (role: UserRole, area: EmployeeArea) => {
+        switch (role) {
+            case UserRole.RESTAURANT_MANAGER: return 'Restaurant Manager';
+            case UserRole.HR_MANAGER: return 'HR Manager';
+            case UserRole.FINANCE_MANAGER: return 'Finance Manager';
+            case UserRole.MARKETING_MANAGER: return 'Marketing Manager';
+            case UserRole.BUSINESS_OWNER: return 'Business Owner';
+            case UserRole.SUPER_ADMIN: return 'Super Admin';
+            case UserRole.ADMIN: return 'Administrator';
+            case UserRole.EMPLOYEE:
+                if (area === EmployeeArea.BOH) return 'Kitchen Staff';
+                if (area === EmployeeArea.FOH) return 'Service Staff';
+                return 'Staff';
+            default: return 'Staff';
+        }
     };
 
     const formatNumber = (amount: number): string => {
@@ -254,7 +332,7 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                     <div className="flex-1 overflow-y-auto p-6 bg-gray-50/50">
                         <div className="space-y-6">
                             <div>
-                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Data Karyawan</h3>
+                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Data Penerima</h3>
                                 <div className="space-y-3">
                                     <div className="flex flex-col">
                                         <label className="mb-1 text-sm font-medium text-gray-700">Periode Gaji (Bulan & Tahun)</label>
@@ -268,12 +346,42 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                        <PayrollInput label="Nama Karyawan" id="employeeName" name="employeeName" value={formData.employeeName} onChange={handleInputChange} />
+                                        {/* Employee Select with Optgroups */}
+                                        <div className="flex flex-col">
+                                            <label className="mb-1 text-sm font-medium text-gray-700">Nama</label>
+                                            <div className="relative">
+                                                <select
+                                                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors appearance-none bg-white"
+                                                    onChange={handleEmployeeSelect}
+                                                    defaultValue=""
+                                                >
+                                                    <option value="" disabled>Pilih Nama...</option>
+                                                    <optgroup label="MANAGEMENT">
+                                                        {managementEmployees.map(emp => (
+                                                            <option key={emp.id} value={emp.id}>{emp.name}</option>
+                                                        ))}
+                                                    </optgroup>
+                                                    <optgroup label="STAFF">
+                                                        {staffEmployees.map(emp => (
+                                                            <option key={emp.id} value={emp.id}>{emp.name}</option>
+                                                        ))}
+                                                    </optgroup>
+                                                </select>
+                                                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-500">
+                                                    <ChevronDown size={16} />
+                                                </div>
+                                            </div>
+                                        </div>
                                         <PayrollInput label="NIK (Auto)" id="nik" name="nik" value={formData.nik} onChange={handleInputChange} />
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                         <PayrollInput label="Jabatan (Auto)" id="position" name="position" value={formData.position} onChange={handleInputChange} />
+                                        <PayrollInput label="Departemen (Auto)" id="department" name="department" value={formData.department} onChange={handleInputChange} />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <PayrollInput label="Status (Auto)" id="status" name="status" value={formData.status} onChange={handleInputChange} />
                                         <PayrollInput label="Jumlah Hari Masuk" id="attendanceDays" name="attendanceDays" type="number" value={formData.attendanceDays} onChange={handleInputChange} />
                                     </div>
                                 </div>
@@ -333,7 +441,7 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
 
                     <div
                         ref={printRef}
-                        className="bg-white rounded-xl shadow-2xl overflow-hidden relative font-serif text-gray-800 print:static print:w-full print:h-auto print:bg-white print:shadow-none print:rounded-none print:m-0 print:overflow-visible w-[210mm] min-h-[297mm] mx-auto"
+                        className="bg-white rounded-xl shadow-2xl overflow-hidden relative font-serif text-gray-800 print:static print:w-full print:max-w-none print:h-auto print:bg-white print:shadow-none print:rounded-none print:m-0 print:overflow-visible w-[210mm] min-h-[297mm] mx-auto"
                     >
                         <SlipMotifTopLeft />
                         <SlipMotifTopRight />
@@ -346,49 +454,100 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                                 <div className="flex justify-start print:ml-4">
                                     <SlipLogo />
                                 </div>
-                                <h1 className="text-xl font-bold tracking-wider mt-12 mb-8">PERINCIAN GAJI KARYAWAN</h1>
+                                <div className="text-right absolute top-8 right-8">
+                                    <h1 className="text-2xl font-bold text-orange-600 uppercase tracking-widest mb-1">SLIP GAJI</h1>
+                                    <p className="text-sm font-bold text-gray-600">Periode: {formData.month}</p>
+                                    <p className="text-xs text-gray-400">No: PS/{new Date().getFullYear()}/{new Date().getMonth() + 1}/001</p>
+                                </div>
                             </header>
                         </div>
 
                         {/* Content Area */}
-                        <div className="px-16 pt-12 pb-32 md:px-32 md:pt-20 md:pb-44 print:static print:px-16 print:pt-4 print:pb-16 relative z-10 flex flex-col justify-between h-full">
-                            <section className="text-sm mb-8 space-y-1">
-                                <SlipRow label="Gaji Bulan" value={formData.month} disableMono={true} />
+                        <div className="px-16 pt-4 pb-32 md:px-32 md:pt-10 md:pb-44 print:static print:px-16 print:pt-4 print:pb-16 relative z-10 flex flex-col justify-between h-full">
+
+                            {/* Employee Info Grid */}
+                            <div className="grid grid-cols-2 gap-x-12 gap-y-2 mb-8 text-sm border-t-2 border-orange-600 pt-6">
                                 <SlipRow label="Nama" value={formData.employeeName} disableMono={true} />
-                                <SlipRow label="NIK" value={formData.nik} disableMono={true} />
+                                <SlipRow label="NIK / ID" value={formData.nik} disableMono={true} />
                                 <SlipRow label="Jabatan" value={formData.position} disableMono={true} />
-                            </section>
+                                <SlipRow label="Status" value={formData.status} disableMono={true} />
+                                <SlipRow label="Departemen" value={formData.department} disableMono={true} />
+                                <SlipRow label="Grade / Gol" value="-" disableMono={true} />
+                            </div>
 
-                            <SlipSection title="PENERIMAAN - PENERIMAAN">
-                                <SlipRow label="Upah Pokok" value={formatNumber(formData.basicSalary)} />
-                                <SlipRow label="Paket" value={formData.allowances > 0 ? formatNumber(formData.allowances) : '-'} />
-                                <SlipRow label="T. Jabatan" value={formatNumber(formData.positionAllowance)} />
-                                <div className="flex items-start text-sm">
-                                    <div className="w-1/2 flex justify-between pr-10">
-                                        <span>T. Kehadiran</span>
-                                        <span>{formData.attendanceDays}</span>
+                            <div className="grid grid-cols-2 gap-8">
+                                {/* LEFT COLUMN: PENERIMAAN */}
+                                <div>
+                                    <div className="bg-orange-600 text-white font-bold text-xs uppercase tracking-wider py-1.5 px-3 mb-4 rounded-sm">
+                                        PENERIMAAN
                                     </div>
-                                    <div className="w-auto pr-4">:</div>
-                                    <div className="flex-1 text-right font-mono tabular-nums">{formData.attendanceDays > 0 ? formatNumber(1450000) : '-'}</div>
+                                    <div className="space-y-2 text-sm">
+                                        <SlipRow label="Gaji Pokok" value={formatNumber(formData.basicSalary)} />
+                                        <SlipRow label="Tunjangan Jabatan" value={formatNumber(formData.positionAllowance)} />
+                                        <SlipRow label="Uang Makan" value={formatNumber(0)} />
+                                        <SlipRow label="Lembur" value={formatNumber(formData.overtime)} />
+                                        <SlipRow label="Paket" value={formatNumber(formData.allowances)} />
+
+                                        <div className="mt-4 pt-2 border-t border-gray-200 bg-gray-50 p-2 rounded">
+                                            <SlipRow label="Total Penerimaan" value={formatNumber(calculateGross())} isBold={true} />
+                                        </div>
+                                    </div>
                                 </div>
-                                <SlipRow label="Lembur" value={formatNumber(formData.overtime)} />
-                                <SlipSeparator symbol="+" />
-                                <SlipRow label="BRUTO" value={formatNumber(calculateGross())} isBold={true} />
-                            </SlipSection>
 
-                            <SlipSection title="POTONGAN - POTONGAN">
-                                <SlipRow label="Pajak" value={formatNumber(formData.tax)} />
-                                <SlipRow label="Lain-lain" value={formatNumber(formData.otherDeductions)} />
-                                <SlipSeparator symbol="-" />
-                                <SlipRow label="TOTAL POTONGAN" value={formatNumber(calculateTotalDeductions())} isBold={true} />
-                            </SlipSection>
+                                {/* RIGHT COLUMN: POTONGAN */}
+                                <div>
+                                    <div className="bg-orange-800 text-white font-bold text-xs uppercase tracking-wider py-1.5 px-3 mb-4 rounded-sm">
+                                        POTONGAN
+                                    </div>
+                                    <div className="space-y-2 text-sm">
+                                        <SlipRow label="PPh 21" value={formatNumber(formData.tax)} />
+                                        <SlipRow label="BPJS Kesehatan" value={formatNumber(0)} />
+                                        <SlipRow label="Lain-lain" value={formatNumber(formData.otherDeductions)} />
 
-                            <section className="mt-8">
-                                <SlipRow label="PENERIMAAN GAJI BERSIH" value={formatNumber(calculateNet())} isBold={true} />
-                            </section>
+                                        <div className="mt-4 pt-2 border-t border-gray-200 bg-gray-50 p-2 rounded">
+                                            <SlipRow label="Total Potongan" value={formatNumber(calculateTotalDeductions())} isBold={true} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                            <div className="mt-auto mb-16 text-center print:mb-0 print:mt-auto">
-                                <p className="italic text-gray-600 font-medium text-sm">"Terima kasih atas kinerjanya, Tuhan memberkati"</p>
+                            {/* TAKE HOME PAY */}
+                            <div className="mt-8 flex items-stretch">
+                                <div className="bg-orange-600 text-white font-bold text-sm uppercase tracking-wider py-3 px-6 flex items-center w-1/3">
+                                    TAKE HOME PAY
+                                </div>
+                                <div className="bg-orange-50 border border-orange-100 flex-1 flex items-center justify-end px-6 py-3">
+                                    <span className="text-xl font-bold text-orange-600">Rp {formatNumber(calculateNet())}</span>
+                                </div>
+                            </div>
+
+                            {/* SIGNATURES */}
+                            <div className="mt-16 grid grid-cols-2 gap-12 text-center text-xs">
+                                <div>
+                                    <p className="mb-16 font-medium">Disetujui Oleh,</p>
+                                    <div className="border-t border-gray-300 w-2/3 mx-auto pt-2">
+                                        <p className="font-bold">HRD Manager</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="mb-16 font-medium">Diterima Oleh,</p>
+                                    <div className="border-t border-gray-300 w-2/3 mx-auto pt-2">
+                                        <p className="font-bold">{formData.employeeName}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* FOOTER TRANSFER INFO */}
+                            <div className="mt-auto pt-8">
+                                <div className="text-xs text-gray-500 mb-2 font-bold uppercase tracking-wider">Ditransfer Ke:</div>
+                                <div className="border border-gray-200 rounded p-3 text-xs w-64">
+                                    <p className="font-bold text-gray-800">BCA (Bank Central Asia)</p>
+                                    <p className="font-mono my-1">123-456-7890</p>
+                                    <p className="text-gray-500 uppercase">A.N. {formData.employeeName || 'NAMA PENERIMA'}</p>
+                                </div>
+                                <div className="mt-4 text-center text-[10px] text-gray-400">
+                                    Dicetak secara otomatis oleh sistem Pawon Salam Payroll
+                                </div>
                             </div>
                         </div>
                     </div>
