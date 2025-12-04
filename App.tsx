@@ -54,15 +54,12 @@ import { CreatePayslip } from './screens/admin/CreatePayslip';
 import { PayslipGeneratorScreen } from './screens/admin/PayslipGeneratorScreen';
 import { HPPCalculatorScreen } from './screens/admin/HPPCalculatorScreen';
 import { SmartOpExScreen } from './screens/admin/SmartOpExScreen';
-import { StockOpnameScreen } from './screens/admin/StockOpnameScreen';
-import { OfflineBanner } from './components/OfflineBanner';
-import { PullToRefresh } from './components/PullToRefresh';
-
-// Initialize Axios Interceptor
-import './services/axiosConfig';
-
+import { NavigationHeader } from './components/NavigationHeader';
 import { useNotificationStore } from './store/notificationStore';
 import { haptics } from './utils/haptics';
+import { OfflineBanner } from './components/OfflineBanner';
+import { PullToRefresh } from './components/PullToRefresh';
+import { StockOpnameScreen } from './screens/admin/StockOpnameScreen';
 
 const App = () => {
   const { isAuthenticated, user, isImpersonating } = useAuthStore();
@@ -93,9 +90,41 @@ const App = () => {
   const [selectedEmpId, setSelectedEmpId] = useState<string | null>(null);
   const [certificateEmployee, setCertificateEmployee] = useState<Employee | null>(null);
 
+  // Navigation History Stack
+  const [history, setHistory] = useState<string[]>([]);
+
+  const MAIN_SCREENS = ['dashboard', 'adminDashboard', 'financeDashboard'];
+
   const handleNavigate = (screen: string, params?: any) => {
     if (params) setScreenParams(params);
+
+    // Push current screen to history before navigating, UNLESS we are navigating to a main screen (reset history)
+    if (MAIN_SCREENS.includes(screen)) {
+      setHistory([]); // Reset history when going to a main tab
+    } else {
+      setHistory(prev => [...prev, currentScreen]);
+    }
+
     setCurrentScreen(screen);
+  };
+
+  const handleBack = () => {
+    if (history.length > 0) {
+      const previousScreen = history[history.length - 1];
+      setHistory(prev => prev.slice(0, -1)); // Pop
+      setCurrentScreen(previousScreen);
+    } else {
+      // Fallback if history is empty but we are not on a main screen
+      if (!MAIN_SCREENS.includes(currentScreen)) {
+        // Default fallback based on role
+        const role = user?.role || UserRole.EMPLOYEE;
+        if ([UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.RESTAURANT_MANAGER, UserRole.HR_MANAGER].includes(role)) {
+          setCurrentScreen('adminDashboard');
+        } else {
+          setCurrentScreen('dashboard');
+        }
+      }
+    }
   };
 
   useEffect(() => {
@@ -214,36 +243,11 @@ const App = () => {
       case 'hrTrendReport': return <HRTrendReportScreen onBack={() => setCurrentScreen('dashboard')} />;
       case 'hrTopPerformance': return <HRTopPerformanceScreen onBack={() => setCurrentScreen('dashboard')} />;
 
-      // Employee Certificate View (View Only? Or maybe just list their own?)
-      // For now, let's just show the screen if they have one, but currently CertificateScreen is for creating/editing.
-      // Employees probably shouldn't access the generator. 
-      // If they click 'certificate', maybe show a list of THEIR certificates?
-      // For now, I'll map it to dashboard to prevent unauthorized access, or leave as is if it was intended.
-      // The previous code had: case 'certificate': return <CertificateScreen onBack={() => setCurrentScreen('dashboard')} />;
-      // But CertificateScreen requires an employee prop now.
-      // So I will remove it for employees for now to avoid crash, or map to dashboard.
       case 'certificate': return <EmployeeDashboardScreen onNavigate={handleNavigate} />;
 
       default: return <EmployeeDashboardScreen onNavigate={handleNavigate} />;
     }
   };
-
-  const exclusionList = [
-    'leaveRequest', 'performanceForm', 'performanceDetail',
-    'dailyChecklistList', 'dailyChecklistForm', 'financePanel', 'financeInput',
-    'marketingPanel', 'hrPerformance', 'payslipList', 'payslipForm',
-    'employeePayslips', 'employeePayslipDetail', 'shiftScheduler',
-    'systemSettings', 'auditLogs', 'dailyJobdesk', 'certificate',
-    'hrSpCoachingForm', 'hrTrendReport', 'hrTopPerformance',
-    'adminLeaveRequest',
-    'jobdeskMonitor',
-    'hrDailyMonitorHub',
-    'createPayslip',
-    'certificateManager',
-    'certificateDetail',
-    'reportFinancial', 'reportRevenueCost', 'reportOperational', 'reportHR', 'reportMarketing',
-    'hppCalculator', 'smartOpex', 'stockOpname'
-  ];
 
   return (
     <ErrorBoundary>
@@ -257,6 +261,7 @@ const App = () => {
             <ImpersonationBanner />
             <ToastContainer />
             <SpecialNotificationBanner />
+            <NavigationHeader currentScreen={currentScreen} onBack={handleBack} />
             <PWAInstallPrompt />
             <OfflineIndicator />
           </div>
@@ -270,7 +275,7 @@ const App = () => {
 
           {/* FOOTER SECTION (Sticky Bottom) */}
           <div className="z-50 sticky bottom-0 shrink-0 print:hidden pointer-events-none">
-            {isAuthenticated && user && !exclusionList.includes(currentScreen) && (
+            {isAuthenticated && user && MAIN_SCREENS.includes(currentScreen) && (
               <div className="pointer-events-auto">
                 <BottomTab role={user.role} currentScreen={currentScreen} onNavigate={handleNavigate} />
               </div>
