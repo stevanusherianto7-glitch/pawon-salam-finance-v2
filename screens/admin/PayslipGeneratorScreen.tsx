@@ -446,122 +446,124 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                         </div>
                     </div>
 
-                    <div
-                        ref={printRef}
-                        className="bg-white rounded-xl shadow-2xl overflow-hidden relative font-serif text-gray-800 print:static print:w-full print:max-w-none print:h-auto print:bg-white print:shadow-none print:rounded-none print:m-0 print:overflow-visible w-[210mm] min-h-[297mm] mx-auto"
-                    >
-                        <SlipMotifTopLeft />
-                        <SlipMotifTopRight />
-                        <SlipMotifBottomLeft />
-                        <SlipMotifBottomRight />
+                    <div className="w-full overflow-x-auto pb-4 scrollbar-thin">
+                        <div
+                            ref={printRef}
+                            className="bg-white rounded-xl shadow-2xl overflow-hidden relative font-serif text-gray-800 print:static print:w-full print:max-w-none print:h-auto print:bg-white print:shadow-none print:rounded-none print:m-0 print:overflow-visible w-[210mm] min-h-[297mm] mx-auto"
+                        >
+                            <SlipMotifTopLeft />
+                            <SlipMotifTopRight />
+                            <SlipMotifBottomLeft />
+                            <SlipMotifBottomRight />
 
-                        {/* Header Area */}
-                        <div className="relative z-20 print:static print:p-8 p-8">
-                            <header className="text-center">
-                                <div className="flex justify-start print:ml-4">
-                                    <SlipLogo />
-                                </div>
-                                <div className="text-right absolute top-8 right-8">
-                                    <h1 className="text-2xl font-bold text-orange-600 uppercase tracking-widest mb-1">SLIP GAJI</h1>
-                                    <p className="text-sm font-bold text-gray-600">Periode: {formData.month}</p>
-                                    <p className="text-xs text-gray-400">No: PS/{new Date().getFullYear()}/{new Date().getMonth() + 1}/001</p>
-                                </div>
-                            </header>
-                        </div>
-
-                        {/* Content Area */}
-                        <div className="px-16 pt-4 pb-32 md:px-32 md:pt-10 md:pb-44 print:static print:px-16 print:pt-4 print:pb-16 relative z-10 flex flex-col justify-between h-full">
-
-                            {/* Employee Info Grid */}
-                            <div className="grid grid-cols-2 gap-x-12 gap-y-2 mb-8 text-sm border-t-2 border-orange-600 pt-6">
-                                <SlipRow label="Nama" value={formData.employeeName} disableMono={true} />
-                                <SlipRow label="NIK / ID" value={formData.nik} disableMono={true} />
-                                <SlipRow label="Jabatan" value={formData.position} disableMono={true} />
-                                <SlipRow label="Status" value={formData.status} disableMono={true} />
-                                <SlipRow label="Departemen" value={formData.department} disableMono={true} />
-                                <SlipRow label="Grade / Gol" value="-" disableMono={true} />
+                            {/* Header Area */}
+                            <div className="relative z-20 print:static print:p-8 p-8">
+                                <header className="text-center">
+                                    <div className="flex justify-start print:ml-4">
+                                        <SlipLogo />
+                                    </div>
+                                    <div className="text-right absolute top-8 right-8">
+                                        <h1 className="text-2xl font-bold text-orange-600 uppercase tracking-widest mb-1">SLIP GAJI</h1>
+                                        <p className="text-sm font-bold text-gray-600">Periode: {formData.month}</p>
+                                        <p className="text-xs text-gray-400">No: PS/{new Date().getFullYear()}/{new Date().getMonth() + 1}/001</p>
+                                    </div>
+                                </header>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-8">
-                                {/* LEFT COLUMN: PENERIMAAN */}
-                                <div>
-                                    <div className="bg-orange-600 text-white font-bold text-xs uppercase tracking-wider py-1.5 px-3 mb-4 rounded-sm">
-                                        PENERIMAAN
-                                    </div>
-                                    <div className="space-y-2 text-sm">
-                                        <SlipRow label="Gaji Pokok" value={formatNumber(formData.basicSalary)} rightAlign={true} />
-                                        <SlipRow label="Tunjangan Jabatan" value={formatNumber(formData.positionAllowance)} rightAlign={true} />
-                                        <SlipRow label="Uang Makan" value={formatNumber(0)} rightAlign={true} />
-                                        <SlipRow label="Lembur" value={formatNumber(formData.overtime)} rightAlign={true} />
-                                        <SlipRow label="Paket" value={formatNumber(formData.allowances)} rightAlign={true} />
+                            {/* Content Area */}
+                            <div className="px-16 pt-4 pb-32 md:px-32 md:pt-10 md:pb-44 print:static print:px-16 print:pt-4 print:pb-16 relative z-10 flex flex-col justify-between h-full">
 
-                                        <div className="mt-4 pt-2 border-t border-gray-200 bg-gray-50 p-2 rounded">
-                                            <div className="flex items-start font-bold text-green-700">
-                                                <div className="w-1/2">Total Penerimaan</div>
-                                                <div className="w-auto pr-4">:</div>
-                                                <div className="flex-1 text-right font-mono tracking-tight">Rp {formatNumber(calculateGross())}</div>
+                                {/* Employee Info Grid */}
+                                <div className="grid grid-cols-2 gap-x-12 gap-y-2 mb-8 text-sm border-t-2 border-orange-600 pt-6">
+                                    <SlipRow label="Nama" value={formData.employeeName} disableMono={true} />
+                                    <SlipRow label="NIK / ID" value={formData.nik} disableMono={true} />
+                                    <SlipRow label="Jabatan" value={formData.position} disableMono={true} />
+                                    <SlipRow label="Status" value={formData.status} disableMono={true} />
+                                    <SlipRow label="Departemen" value={formData.department} disableMono={true} />
+                                    <SlipRow label="Grade / Gol" value="-" disableMono={true} />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-8">
+                                    {/* LEFT COLUMN: PENERIMAAN */}
+                                    <div>
+                                        <div className="bg-orange-600 text-white font-bold text-xs uppercase tracking-wider py-1.5 px-3 mb-4 rounded-sm">
+                                            PENERIMAAN
+                                        </div>
+                                        <div className="space-y-2 text-sm">
+                                            <SlipRow label="Gaji Pokok" value={formatNumber(formData.basicSalary)} rightAlign={true} />
+                                            <SlipRow label="Tunjangan Jabatan" value={formatNumber(formData.positionAllowance)} rightAlign={true} />
+                                            <SlipRow label="Uang Makan" value={formatNumber(0)} rightAlign={true} />
+                                            <SlipRow label="Lembur" value={formatNumber(formData.overtime)} rightAlign={true} />
+                                            <SlipRow label="Paket" value={formatNumber(formData.allowances)} rightAlign={true} />
+
+                                            <div className="mt-4 pt-2 border-t border-gray-200 bg-gray-50 p-2 rounded">
+                                                <div className="flex items-start font-bold text-green-700">
+                                                    <div className="w-1/2">Total Penerimaan</div>
+                                                    <div className="w-auto pr-4">:</div>
+                                                    <div className="flex-1 text-right font-mono tracking-tight">Rp {formatNumber(calculateGross())}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* RIGHT COLUMN: POTONGAN */}
+                                    <div>
+                                        <div className="bg-orange-800 text-white font-bold text-xs uppercase tracking-wider py-1.5 px-3 mb-4 rounded-sm">
+                                            POTONGAN
+                                        </div>
+                                        <div className="space-y-2 text-sm">
+                                            <SlipRow label="PPh 21" value={formatNumber(formData.tax)} rightAlign={true} />
+                                            <SlipRow label="BPJS Kesehatan" value={formatNumber(0)} rightAlign={true} />
+                                            <SlipRow label="Lain-lain" value={formatNumber(formData.otherDeductions)} rightAlign={true} />
+
+                                            <div className="mt-4 pt-2 border-t border-gray-200 bg-gray-50 p-2 rounded">
+                                                <div className="flex items-start font-bold text-red-600">
+                                                    <div className="w-1/2">Total Potongan</div>
+                                                    <div className="w-auto pr-4">:</div>
+                                                    <div className="flex-1 text-right font-mono tracking-tight">Rp {formatNumber(calculateTotalDeductions())}</div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* RIGHT COLUMN: POTONGAN */}
-                                <div>
-                                    <div className="bg-orange-800 text-white font-bold text-xs uppercase tracking-wider py-1.5 px-3 mb-4 rounded-sm">
-                                        POTONGAN
+                                {/* TAKE HOME PAY */}
+                                <div className="mt-8 flex items-stretch">
+                                    <div className="bg-orange-600 text-white font-bold text-sm uppercase tracking-wider py-3 px-6 flex items-center w-1/3">
+                                        TAKE HOME PAY
                                     </div>
-                                    <div className="space-y-2 text-sm">
-                                        <SlipRow label="PPh 21" value={formatNumber(formData.tax)} rightAlign={true} />
-                                        <SlipRow label="BPJS Kesehatan" value={formatNumber(0)} rightAlign={true} />
-                                        <SlipRow label="Lain-lain" value={formatNumber(formData.otherDeductions)} rightAlign={true} />
+                                    <div className="bg-orange-50 border border-orange-100 flex-1 flex items-center justify-end px-6 py-3">
+                                        <span className="text-2xl font-bold text-orange-600 font-mono tracking-tight">Rp {formatNumber(calculateNet())}</span>
+                                    </div>
+                                </div>
 
-                                        <div className="mt-4 pt-2 border-t border-gray-200 bg-gray-50 p-2 rounded">
-                                            <div className="flex items-start font-bold text-red-600">
-                                                <div className="w-1/2">Total Potongan</div>
-                                                <div className="w-auto pr-4">:</div>
-                                                <div className="flex-1 text-right font-mono tracking-tight">Rp {formatNumber(calculateTotalDeductions())}</div>
-                                            </div>
+                                {/* SIGNATURES */}
+                                <div className="mt-16 grid grid-cols-2 gap-12 text-center text-xs">
+                                    <div>
+                                        <p className="mb-16 font-medium">Disetujui Oleh,</p>
+                                        <div className="border-t border-gray-300 w-2/3 mx-auto pt-2">
+                                            <p className="font-bold">HRD Manager</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="mb-16 font-medium">Diterima Oleh,</p>
+                                        <div className="border-t border-gray-300 w-2/3 mx-auto pt-2">
+                                            <p className="font-bold">{formData.employeeName}</p>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* TAKE HOME PAY */}
-                            <div className="mt-8 flex items-stretch">
-                                <div className="bg-orange-600 text-white font-bold text-sm uppercase tracking-wider py-3 px-6 flex items-center w-1/3">
-                                    TAKE HOME PAY
-                                </div>
-                                <div className="bg-orange-50 border border-orange-100 flex-1 flex items-center justify-end px-6 py-3">
-                                    <span className="text-2xl font-bold text-orange-600 font-mono tracking-tight">Rp {formatNumber(calculateNet())}</span>
-                                </div>
-                            </div>
-
-                            {/* SIGNATURES */}
-                            <div className="mt-16 grid grid-cols-2 gap-12 text-center text-xs">
-                                <div>
-                                    <p className="mb-16 font-medium">Disetujui Oleh,</p>
-                                    <div className="border-t border-gray-300 w-2/3 mx-auto pt-2">
-                                        <p className="font-bold">HRD Manager</p>
+                                {/* FOOTER TRANSFER INFO */}
+                                <div className="mt-auto pt-8">
+                                    <div className="text-xs text-gray-500 mb-2 font-bold uppercase tracking-wider">Ditransfer Ke:</div>
+                                    <div className="border border-gray-200 rounded p-3 text-xs w-64">
+                                        <p className="font-bold text-gray-800">BCA (Bank Central Asia)</p>
+                                        <p className="font-mono my-1">123-456-7890</p>
+                                        <p className="text-gray-500 uppercase">A.N. {formData.employeeName || 'NAMA PENERIMA'}</p>
                                     </div>
-                                </div>
-                                <div>
-                                    <p className="mb-16 font-medium">Diterima Oleh,</p>
-                                    <div className="border-t border-gray-300 w-2/3 mx-auto pt-2">
-                                        <p className="font-bold">{formData.employeeName}</p>
+                                    <div className="mt-4 text-center text-[10px] text-gray-400">
+                                        Dicetak secara otomatis oleh sistem Pawon Salam Payroll
                                     </div>
-                                </div>
-                            </div>
-
-                            {/* FOOTER TRANSFER INFO */}
-                            <div className="mt-auto pt-8">
-                                <div className="text-xs text-gray-500 mb-2 font-bold uppercase tracking-wider">Ditransfer Ke:</div>
-                                <div className="border border-gray-200 rounded p-3 text-xs w-64">
-                                    <p className="font-bold text-gray-800">BCA (Bank Central Asia)</p>
-                                    <p className="font-mono my-1">123-456-7890</p>
-                                    <p className="text-gray-500 uppercase">A.N. {formData.employeeName || 'NAMA PENERIMA'}</p>
-                                </div>
-                                <div className="mt-4 text-center text-[10px] text-gray-400">
-                                    Dicetak secara otomatis oleh sistem Pawon Salam Payroll
                                 </div>
                             </div>
                         </div>

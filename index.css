@@ -127,6 +127,7 @@
   /* Custom Scrollbar untuk Content Area */
   .scrollbar-thin::-webkit-scrollbar {
     width: 5px;
+    height: 5px;
     /* Sangat tipis */
   }
 

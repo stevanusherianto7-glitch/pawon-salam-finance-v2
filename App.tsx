@@ -267,7 +267,7 @@ const App = () => {
           </div>
 
           {/* CONTENT AREA (Scrollable) */}
-          <div className={`flex-1 overflow-y-auto overscroll-y-contain scrollbar-thin relative ${isImpersonating ? '' : ''} print:overflow-visible print:h-auto print:pb-0 print:static`} id="main-content">
+          <div className={`flex-1 overflow-auto overscroll-contain scrollbar-thin relative ${isImpersonating ? '' : ''} print:overflow-visible print:h-auto print:pb-0 print:static`} id="main-content">
             <PullToRefresh onRefresh={() => window.location.reload()}>
               {renderScreen()}
             </PullToRefresh>
