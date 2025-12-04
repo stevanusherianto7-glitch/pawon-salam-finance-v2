@@ -1,53 +1,52 @@
-# SYSTEM HEALTH REPORT
-**Date:** 2025-12-02
+# 🏥 PAWON SALAM CODEBASE HEALTH REPORT
+**Date:** 2025-12-05
 **Auditor:** Antigravity AI
-
-## 1. STRUCTURAL INTEGRITY CHECK
-**Status:** ⚠️ WARNING
-
-*   **Folder Structure:** ✅ **PASSED**. Modular structure (`components`, `screens`, `services`, `stores`) is present, though located in root rather than `src`.
-*   **Dependencies:** ✅ **PASSED**. `package.json` is clean. No redundant libraries found.
-*   **Type Safety:** ⚠️ **WARNING**. High usage of `: any` detected in multiple files.
-    *   *Risk:* Reduces type safety and increases runtime error potential.
-    *   *Action:* Gradual refactoring to proper interfaces required.
-
-## 2. LOGIC FLOW ANALYSIS
-**Status:** 🔴 CRITICAL FAILURE (SOP VIOLATION)
-
-*   **State Management:** ✅ **PASSED**. `useOpexStore` and `useHppStore` correctly use `persist` middleware. Data survives refresh.
-*   **Data Flow:** ✅ **PASSED**. No excessive prop-drilling detected. Components connect directly to stores.
-*   **Calculations (Math):** 🔴 **CRITICAL FAILURE**.
-    *   *Violation:* SOP V2 Part 4.2: "Money: Use Decimal/BigInt logic. Never simple Floats."
-    *   *Finding:* `HPPCalculatorService.ts` uses standard JavaScript floating point math (`number`).
-    *   *Risk:* Precision errors in currency calculations (e.g., `0.1 + 0.2 !== 0.3`).
-    *   *Action:* Must migrate to `decimal.js` or integer-based math.
-
-## 3. UI/UX & MOBILE COMPLIANCE
-**Status:** ⚠️ WARNING
-
-*   **Z-Index Layering:** ✅ **PASSED**.
-    *   `HPPCalculatorModal`: `z-[9999]` (Overlay) / `z-[10000]` (Footer).
-    *   `SmartOpexModal`: `z-[9999]` (Overlay) / `z-[10000]` (Footer).
-    *   `StockOpnameModal`: `z-[9999]` (Overlay) / `z-[10000]` (Footer).
-
-*   **Safe Areas (Mobile):** ⚠️ **WARNING**.
-    *   `HPPCalculatorModal`: ✅ Has `mt-[120px]` and `pb-[200px]`.
-    *   `SmartOpexModal`: ✅ Has `mt-[120px]` and `pb-[200px]`.
-    *   `StockOpnameModal`: ❌ **FAILED**. Uses `flex items-center` without `mt-[120px]`. Risk of address bar overlap on Android.
-    *   *Bottom Padding:* `StockOpnameModal` uses `pb-32` (128px), which is less than the requested `pb-[150px]`.
-
-*   **Glassmorphism:** ✅ **PASSED**. Consistent use of `backdrop-blur` and orange gradients.
 
 ---
 
-## RECOMMENDATIONS (PRIORITIZED)
+## 1. 🏗️ STRUCTURAL INTEGRITY CHECK
+**Status:** ⚠️ **WARNING**
 
-1.  **[HIGH] Fix StockOpnameModal Layout:**
-    *   Apply `mt-[120px]` to the container to match other modals.
-    *   Increase padding to `pb-[150px]`.
+| Check | Status | Details |
+| :--- | :--- | :--- |
+| **Folder Structure** | ✅ PASSED | Modular and standard React/Vite structure. |
+| **Dependencies** | ✅ PASSED | Clean `package.json`. No redundant libraries found. |
+| **TypeScript Types** | ⚠️ WARNING | Detected usage of `any` (e.g., `StockOpnameScreen.tsx` line 15). |
+| **Spaghetti Code** | ✅ PASSED | Components are generally well-separated from logic. |
 
-2.  **[HIGH] Migrate Math Logic:**
-    *   Refactor `HPPCalculatorService` to use a safe math library or integer logic to comply with SOP V2.
+---
 
-3.  **[MEDIUM] Type Safety Refactor:**
-    *   Schedule a "Type Cleanup" session to replace `any` with proper interfaces.
+## 2. 🧠 LOGIC FLOW ANALYSIS
+**Status:** ⚠️ **WARNING**
+
+| Check | Status | Details |
+| :--- | :--- | :--- |
+| **State Persistence** | ⚠️ WARNING | `HPPCalculatorScreen` uses local state and **will lose data on refresh**. `useOpexStore` is correctly persisted. |
+| **Data Flow** | ✅ PASSED | Data flow is generally direct. `HPPCalculatorService` isolates complex logic well. |
+| **Calculations** | ✅ PASSED | `HPPCalculatorService` uses **Integer Math** (Math.round) to avoid floating-point errors. Safe. |
+
+---
+
+## 3. 🎨 UI/UX & MOBILE COMPLIANCE
+**Status:** 🔴 **CRITICAL FAILURE**
+
+| Check | Status | Details |
+| :--- | :--- | :--- |
+| **Z-Index Wars** | 🔴 **FAIL** | **ALL** inspected screens (`HPPCalculator`, `SmartOpEx`, `StockOpname`) use `z-[100]` for footers. **MUST BE `z-[9999]`** to avoid collisions. |
+| **Safe Areas** | ⚠️ WARNING | Screens use `pb-32` and `-mt-6`. **Standard Requirement is `mt-[120px]` and `pb-[150px]`** for full mobile safety. |
+| **Glassmorphism** | ⚠️ WARNING | Inconsistent application. Screens rely heavily on `bg-white` instead of `bg-white/90 backdrop-blur-md` (Glassmorphism). |
+
+---
+
+## 📋 RECOMMENDATIONS (PRIORITIZED)
+
+### 🚨 P0: CRITICAL FIXES (Immediate Action Required)
+1.  **Fix Z-Index**: Global search & replace `z-[100]` -> `z-[9999]` in all Sticky Footers (`HPPCalculatorScreen`, `SmartOpExScreen`, `StockOpnameScreen`).
+2.  **Fix Safe Areas**: Update main content containers to use `pb-[150px]` to ensure footers don't cover content on tall mobile screens.
+
+### 🔸 P1: LOGIC & STABILITY
+3.  **Persist HPP Data**: Refactor `HPPCalculatorScreen` to use a persisted Zustand store (`useHppStore`) so users don't lose work on reload.
+4.  **Type Safety**: Replace `any` in `StockOpnameScreen` with proper interfaces.
+
+### 🔹 P2: UI POLISH
+5.  **Apply Glassmorphism**: Upgrade `bg-white` cards to `bg-white/90 backdrop-blur-md` for the premium "Fintech" feel.

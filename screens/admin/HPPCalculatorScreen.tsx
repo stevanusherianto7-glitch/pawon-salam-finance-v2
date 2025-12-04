@@ -3,25 +3,22 @@ import { Plus, Trash2, Save, Zap, Package, Shield, Users } from 'lucide-react';
 import { StockItem, inventoryApi } from '../../services/api';
 import { HPPCalculatorService, IngredientInput, OverheadCost, DEFAULT_OVERHEADS, ProfitProtectionInput } from '../../services/HPPCalculatorService';
 import { PanelHeader } from '../../components/PanelHeader';
+import { useHppStore } from '../../store/useHppStore';
 
 interface Props {
     onBack: () => void;
 }
 
 export const HPPCalculatorScreen: React.FC<Props> = ({ onBack }) => {
-    const [ingredients, setIngredients] = useState<IngredientInput[]>([]);
-    const [overheads, setOverheads] = useState<OverheadCost[]>(DEFAULT_OVERHEADS);
-    const [stockItems, setStockItems] = useState<StockItem[]>([]);
-    const [menuName, setMenuName] = useState('');
-    const [customSellingPrice, setCustomSellingPrice] = useState<number>(0);
-    const [isFooterExpanded, setIsFooterExpanded] = useState(false);
+    // Use Store instead of Local State
+    const {
+        ingredients, overheads, menuName, customSellingPrice, params,
+        setIngredients, setOverheads, setMenuName, setCustomSellingPrice, setParams,
+        addIngredient, updateIngredient, removeIngredient, toggleOverhead, reset
+    } = useHppStore();
 
-    const [params, setParams] = useState<ProfitProtectionInput>({
-        laborCostPercent: 20,
-        fixedCostBuffer: 2000,
-        enableRiskFactor: false,
-        targetProfitMargin: 30
-    });
+    const [stockItems, setStockItems] = useState<StockItem[]>([]);
+    const [isFooterExpanded, setIsFooterExpanded] = useState(false);
 
     // Load stock items
     useEffect(() => {
@@ -41,31 +38,15 @@ export const HPPCalculatorScreen: React.FC<Props> = ({ onBack }) => {
         [ingredients, overheads, params, customSellingPrice]);
 
     // Handlers
-    const handleAddIngredient = () => {
+    const handleAddIngredientWrapper = () => {
         if (stockItems.length === 0) return;
-        const newItem: IngredientInput = {
-            id: `ing-${Date.now()}`,
-            stockItem: stockItems[0],
-            qtyNeeded: 0,
-            yieldPercent: 100,
-        };
-        setIngredients([...ingredients, newItem]);
-    };
-
-    const updateIngredient = (id: string, field: keyof IngredientInput, value: any) => {
-        setIngredients(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
+        addIngredient(stockItems[0]);
     };
 
     const updateStockItem = (id: string, stockItemId: string) => {
         const stockItem = stockItems.find(s => s.id === stockItemId);
         if (stockItem) updateIngredient(id, 'stockItem', stockItem);
     };
-
-    const toggleOverhead = (id: string) => {
-        setOverheads(prev => prev.map(oh => oh.id === id ? { ...oh, isSelected: !oh.isSelected } : oh));
-    };
-
-    const removeIngredient = (id: string) => setIngredients(prev => prev.filter(i => i.id !== id));
 
     const getProfitMeterColor = (fc: number) => {
         if (fc <= 35) return 'bg-green-500';
@@ -74,7 +55,7 @@ export const HPPCalculatorScreen: React.FC<Props> = ({ onBack }) => {
     };
 
     return (
-        <div className="bg-gray-50 min-h-screen pb-32">
+        <div className="bg-gray-50 min-h-screen pb-[calc(env(safe-area-inset-bottom)+150px)]">
             <PanelHeader title="Kalkulator HPP" icon={Shield} onBack={onBack} />
 
             <div className="px-4 space-y-4 -mt-6 relative z-10">
@@ -97,7 +78,7 @@ export const HPPCalculatorScreen: React.FC<Props> = ({ onBack }) => {
                             <Package size={16} className="text-orange-500" />
                             Prime Cost (Bahan)
                         </h3>
-                        <button onClick={handleAddIngredient} className="text-[10px] font-bold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors">
+                        <button onClick={handleAddIngredientWrapper} className="text-[10px] font-bold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors">
                             + Tambah
                         </button>
                     </div>
@@ -236,7 +217,8 @@ export const HPPCalculatorScreen: React.FC<Props> = ({ onBack }) => {
             </div>
 
             {/* STICKY FOOTER - RESULT PANEL */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-[100] flex flex-col transition-all duration-300 max-w-md mx-auto">
+            {/* Z-Index Fixed to 40, Padding Bottom adjusted for Safe Area */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-[40] flex flex-col transition-all duration-300 max-w-md mx-auto pb-[calc(env(safe-area-inset-bottom)+20px)]">
 
                 {/* Expandable Handle */}
                 <div
@@ -318,10 +300,15 @@ export const HPPCalculatorScreen: React.FC<Props> = ({ onBack }) => {
                         </div>
                     </div>
 
-                    <button className="w-full py-2.5 bg-gradient-to-r from-[#E87722] to-[#F9A055] text-white rounded-xl font-bold shadow-lg shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm">
-                        <Save size={18} />
-                        Simpan Menu & HPP
-                    </button>
+                    <div className="flex gap-2">
+                        <button onClick={reset} className="px-4 py-2.5 bg-gray-100 text-gray-500 rounded-xl font-bold text-sm hover:bg-gray-200 transition-colors">
+                            Reset
+                        </button>
+                        <button className="flex-1 py-2.5 bg-gradient-to-r from-[#E87722] to-[#F9A055] text-white rounded-xl font-bold shadow-lg shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm">
+                            <Save size={18} />
+                            Simpan Menu & HPP
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

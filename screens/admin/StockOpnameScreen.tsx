@@ -12,7 +12,7 @@ export const StockOpnameScreen: React.FC<Props> = ({ onBack, isReadOnly = false 
     const [items, setItems] = useState<StockItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
-    const [resultData, setResultData] = useState<any>(null);
+    const [resultData, setResultData] = useState<any>(null); // TODO: Fix type definition for resultData
 
     const [activeTab, setActiveTab] = useState<'FOH' | 'BOH'>('FOH');
 
@@ -72,7 +72,7 @@ export const StockOpnameScreen: React.FC<Props> = ({ onBack, isReadOnly = false 
     const filteredItems = items.filter(item => item.category === activeTab);
 
     return (
-        <div className="bg-gray-50 min-h-screen pb-32">
+        <div className="bg-gray-50 min-h-screen pb-[calc(env(safe-area-inset-bottom)+150px)]">
             <PanelHeader title="Stock Opname" icon={Package} onBack={onBack} />
 
             <div className="px-4 space-y-4 -mt-6 relative z-10">
@@ -220,7 +220,7 @@ export const StockOpnameScreen: React.FC<Props> = ({ onBack, isReadOnly = false 
 
             {/* Footer */}
             {!success && !isReadOnly && (
-                <div className="fixed bottom-0 left-0 right-0 p-5 border-t border-gray-100 bg-white z-[100] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] max-w-md mx-auto">
+                <div className="fixed bottom-0 left-0 right-0 p-5 border-t border-gray-100 bg-white z-[40] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] max-w-md mx-auto pb-[calc(env(safe-area-inset-bottom)+20px)]">
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div className="flex items-center gap-2 text-xs text-gray-400 font-medium hidden sm:flex">
                             <AlertCircle size={14} />

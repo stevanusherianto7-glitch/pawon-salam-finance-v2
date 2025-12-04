@@ -227,7 +227,7 @@ export const SmartOpExScreen: React.FC<Props> = ({ onBack }) => {
     );
 
     return (
-        <div className="bg-gray-50 min-h-screen pb-32">
+        <div className="bg-gray-50 min-h-screen pb-[calc(env(safe-area-inset-bottom)+150px)]">
             <PanelHeader title="Smart OpEx" icon={TrendingUp} onBack={onBack} />
 
             <div className="px-4 space-y-4 -mt-6 relative z-10">
@@ -258,7 +258,7 @@ export const SmartOpExScreen: React.FC<Props> = ({ onBack }) => {
             </div>
 
             {/* Sticky Footer */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-4 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-[100] max-w-md mx-auto">
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-4 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-[40] max-w-md mx-auto pb-[calc(env(safe-area-inset-bottom)+20px)]">
                 <div className="flex justify-between items-center">
                     <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Expense</span>
                     <span className="text-xl font-black text-gray-800">Rp {getTotalExpense().toLocaleString()}</span>
