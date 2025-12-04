@@ -43,17 +43,17 @@ export const LoginScreen = () => {
     };
 
     return (
-        <div className="min-h-screen w-full relative overflow-hidden flex items-center justify-center font-sans">
+        <div className="flex flex-col h-[100dvh] overflow-hidden bg-gray-50 font-sans relative">
             <BackgroundPattern />
 
-            <div className="relative z-10 w-full max-w-sm px-4 py-6">
-                <div className="mb-6 animate-slide-in-down">
+            {/* BAGIAN ATAS: Logo & Form */}
+            <div className="shrink-0 px-4 pt-6 pb-2 relative z-10 flex flex-col items-center w-full">
+                <div className="mb-4 animate-slide-in-down">
                     <Logo variant="color" size="lg" />
                 </div>
 
-                {/* Main Cream Card - ULTIMATE MASTER GLASS THEME */}
-                <div className="w-full bg-white/70 backdrop-blur-2xl border border-white/80 rounded-[2.5rem] p-6 shadow-2xl shadow-orange-500/20 flex flex-col gap-5 relative overflow-hidden group">
-
+                {/* Form Container - Premium Glass */}
+                <div className="w-full max-w-sm bg-white/70 backdrop-blur-2xl border border-white/80 rounded-[2.5rem] p-6 shadow-2xl shadow-orange-500/20 relative overflow-hidden group">
                     {/* Decorative Shine Effect */}
                     <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white to-transparent opacity-70"></div>
                     <div className="absolute -top-20 -right-20 w-40 h-40 bg-orange-400/10 rounded-full blur-3xl pointer-events-none group-hover:bg-orange-400/20 transition-all duration-700"></div>
@@ -97,47 +97,8 @@ export const LoginScreen = () => {
                         </form>
                     </div>
 
-                    {/* Separator */}
-                    <div className="flex items-center gap-3 px-2">
-                        <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent flex-1"></div>
-                        <p className="text-[9px] font-extrabold text-gray-400 uppercase tracking-widest">Pilih Akun</p>
-                        <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent flex-1"></div>
-                    </div>
-
-                    {/* Inner Zone B: Account Selection (Premium Glass Cards - Light Mode) */}
-                    <div className="p-1 h-48 flex flex-col">
-                        <div className="overflow-y-auto h-full pr-1 space-y-2.5 scrollbar-hide pb-2">
-                            {DEMO_ROLES.map((role, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => handleRoleSelect(role)}
-                                    className="group relative w-full flex items-center gap-4 p-3.5 text-left bg-white/60 backdrop-blur-md border border-white/60 rounded-2xl overflow-hidden transition-all duration-300 ease-out hover:-translate-y-1 hover:border-orange-300 hover:shadow-md hover:shadow-orange-500/10 hover:bg-white/90 active:scale-[0.98] shadow-sm"
-                                >
-                                    {/* Ambient Lighting */}
-                                    <div className="absolute -top-8 -left-8 w-24 h-24 bg-gradient-to-br from-orange-100/50 to-rose-100/50 rounded-full blur-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                                    {/* Pop-out Icon */}
-                                    <div className="bg-white rounded-xl p-2.5 shadow-sm border border-orange-100/50 transition-all duration-300 group-hover:shadow-md group-hover:scale-110 group-hover:rotate-3 group-hover:border-orange-200">
-                                        <role.icon size={20} className="text-orange-500" strokeWidth={2} />
-                                    </div>
-
-                                    {/* Content */}
-                                    <div className="flex-1 min-w-0 relative z-10">
-                                        <p className="text-xs font-bold text-gray-800 tracking-tight group-hover:text-orange-700 transition-colors">{role.label}</p>
-                                        {role.name && <p className="text-[10px] text-gray-500 font-medium truncate group-hover:text-gray-600">{role.name}</p>}
-                                    </div>
-
-                                    {/* Arrow Icon */}
-                                    <div className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0 duration-300 bg-orange-50 rounded-full p-1 shadow-sm">
-                                        <LogIn size={14} className="text-orange-500" />
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
                     {error && (
-                        <div className="absolute bottom-4 left-6 right-6 p-3 rounded-xl bg-red-50/90 backdrop-blur-sm border border-red-200 flex flex-col gap-2 animate-shake z-20 shadow-lg shadow-red-500/10">
+                        <div className="mt-4 p-3 rounded-xl bg-red-50/90 backdrop-blur-sm border border-red-200 flex flex-col gap-2 animate-shake shadow-lg shadow-red-500/10">
                             <div className="flex flex-col gap-1">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
@@ -151,8 +112,50 @@ export const LoginScreen = () => {
                         </div>
                     )}
                 </div>
+            </div>
 
-                <p className="mt-8 text-[10px] text-gray-400 font-bold text-shadow-sm flex flex-col items-center gap-1 opacity-80 hover:opacity-100 transition-opacity">
+            {/* BAGIAN TENGAH: List Akun (Scrollable) */}
+            <div className="flex-1 overflow-y-auto px-4 scrollbar-hide w-full max-w-sm mx-auto relative z-10">
+                {/* Separator */}
+                <div className="flex items-center gap-3 px-2 py-4 sticky top-0 bg-gray-50/80 backdrop-blur-sm z-20">
+                    <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent flex-1"></div>
+                    <p className="text-[9px] font-extrabold text-gray-400 uppercase tracking-widest">Pilih Akun</p>
+                    <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent flex-1"></div>
+                </div>
+
+                <div className="space-y-2.5 pb-4">
+                    {DEMO_ROLES.map((role, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => handleRoleSelect(role)}
+                            className="group relative w-full flex items-center gap-4 p-3.5 text-left bg-white/60 backdrop-blur-md border border-white/60 rounded-2xl overflow-hidden transition-all duration-300 ease-out hover:-translate-y-1 hover:border-orange-300 hover:shadow-md hover:shadow-orange-500/10 hover:bg-white/90 active:scale-[0.98] shadow-sm"
+                        >
+                            {/* Ambient Lighting */}
+                            <div className="absolute -top-8 -left-8 w-24 h-24 bg-gradient-to-br from-orange-100/50 to-rose-100/50 rounded-full blur-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                            {/* Pop-out Icon */}
+                            <div className="bg-white rounded-xl p-2.5 shadow-sm border border-orange-100/50 transition-all duration-300 group-hover:shadow-md group-hover:scale-110 group-hover:rotate-3 group-hover:border-orange-200">
+                                <role.icon size={20} className="text-orange-500" strokeWidth={2} />
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 min-w-0 relative z-10">
+                                <p className="text-xs font-bold text-gray-800 tracking-tight group-hover:text-orange-700 transition-colors">{role.label}</p>
+                                {role.name && <p className="text-[10px] text-gray-500 font-medium truncate group-hover:text-gray-600">{role.name}</p>}
+                            </div>
+
+                            {/* Arrow Icon */}
+                            <div className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0 duration-300 bg-orange-50 rounded-full p-1 shadow-sm">
+                                <LogIn size={14} className="text-orange-500" />
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* BAGIAN BAWAH: Footer */}
+            <div className="py-4 text-center shrink-0 relative z-10">
+                <p className="text-[10px] text-gray-400 font-bold text-shadow-sm flex flex-col items-center gap-1 opacity-80 hover:opacity-100 transition-opacity">
                     <span>&copy; 2025 Pawon Salam Enterprise</span>
                 </p>
             </div>
