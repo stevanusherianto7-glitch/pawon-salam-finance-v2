@@ -56,6 +56,7 @@ import { HPPCalculatorScreen } from './screens/admin/HPPCalculatorScreen';
 import { SmartOpExScreen } from './screens/admin/SmartOpExScreen';
 import { StockOpnameScreen } from './screens/admin/StockOpnameScreen';
 import { OfflineBanner } from './components/OfflineBanner';
+import { PullToRefresh } from './components/PullToRefresh';
 
 // Initialize Axios Interceptor
 import './services/axiosConfig';
@@ -262,7 +263,9 @@ const App = () => {
 
           {/* CONTENT AREA (Scrollable) */}
           <div className={`flex-1 overflow-y-auto overscroll-y-contain scrollbar-thin relative ${isImpersonating ? '' : ''} print:overflow-visible print:h-auto print:pb-0 print:static`} id="main-content">
-            {renderScreen()}
+            <PullToRefresh onRefresh={() => window.location.reload()}>
+              {renderScreen()}
+            </PullToRefresh>
           </div>
 
           {/* FOOTER SECTION (Sticky Bottom) */}
