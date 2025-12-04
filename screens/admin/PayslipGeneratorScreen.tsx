@@ -133,13 +133,13 @@ const PayrollInput: React.FC<{
     placeholder?: string;
     isCurrency?: boolean;
 }> = ({ label, id, name, value, onChange, type = 'text', placeholder = '', isCurrency = false }) => (
-    <div className="flex flex-col">
-        <label htmlFor={id} className="mb-1 text-sm font-medium text-gray-700">
+    <div className="flex flex-col group">
+        <label htmlFor={id} className="mb-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider transition-colors group-focus-within:text-orange-500">
             {label}
         </label>
         <div className="relative">
             {isCurrency && (
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 text-sm">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm font-medium transition-colors group-focus-within:text-orange-500">
                     Rp
                 </span>
             )}
@@ -151,7 +151,7 @@ const PayrollInput: React.FC<{
                 onChange={onChange}
                 placeholder={placeholder}
                 inputMode={type === 'number' ? 'numeric' : 'text'}
-                className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors ${isCurrency ? 'pl-9' : ''}`}
+                className={`w-full px-3 py-2.5 text-sm bg-gray-50 border border-transparent rounded-xl focus:outline-none focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all duration-300 font-semibold text-gray-800 placeholder-gray-300 ${isCurrency ? 'pl-10 font-mono tracking-tight' : ''}`}
             />
         </div>
     </div>
@@ -300,10 +300,10 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
         <div className="min-h-screen bg-orange-50 font-sans print:p-0 print:m-0 print:bg-white">
             {!showSlip ? (
                 // FORM VIEW - 3 Part Layout
-                <div className="flex flex-col h-screen max-w-md mx-auto bg-white shadow-2xl md:max-w-4xl md:h-auto md:min-h-screen md:my-8 md:rounded-2xl overflow-hidden">
+                <div className="flex flex-col h-screen max-w-md mx-auto bg-white/90 backdrop-blur-md shadow-[0_4px_20px_rgb(0,0,0,0.05)] rounded-2xl border border-white/20 md:max-w-4xl md:h-auto md:min-h-screen md:my-8 overflow-hidden">
 
                     {/* 1. STATIC HEADER */}
-                    <div className="flex-none p-6 border-b border-gray-100 bg-white z-10 relative">
+                    <div className="flex-none p-6 border-b border-gray-100/50 bg-white/50 backdrop-blur-sm z-10 relative">
                         <div className="flex items-center gap-2 mb-4">
                             <button onClick={onBack} className="text-gray-500 hover:text-orange-600 transition-colors flex items-center gap-1 text-sm font-medium">
                                 <ArrowLeft size={16} /> Kembali
@@ -329,13 +329,13 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                     </div>
 
                     {/* 2. SCROLLABLE CONTENT */}
-                    <div className="flex-1 overflow-y-auto p-6 bg-gray-50/50 scrollbar-thin">
+                    <div className="flex-1 overflow-y-auto p-6 bg-white/30 scrollbar-thin">
                         <div className="space-y-6">
                             <div>
-                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Data Penerima</h3>
-                                <div className="space-y-3">
-                                    <div className="flex flex-col">
-                                        <label className="mb-1 text-sm font-medium text-gray-700">Periode Gaji (Bulan & Tahun)</label>
+                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Data Penerima</h3>
+                                <div className="space-y-4">
+                                    <div className="flex flex-col group">
+                                        <label className="mb-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider transition-colors group-focus-within:text-orange-500">Periode Gaji (Bulan & Tahun)</label>
                                         <GlassDatePicker
                                             selectedDate={selectedDate}
                                             onChange={setSelectedDate}
@@ -345,13 +345,13 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {/* Employee Select with Optgroups */}
-                                        <div className="flex flex-col">
-                                            <label className="mb-1 text-sm font-medium text-gray-700">Nama</label>
+                                        <div className="flex flex-col group">
+                                            <label className="mb-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider transition-colors group-focus-within:text-orange-500">Nama</label>
                                             <div className="relative">
                                                 <select
-                                                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors appearance-none bg-white"
+                                                    className="w-full px-3 py-2.5 text-sm bg-gray-50 border border-transparent rounded-xl focus:outline-none focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all duration-300 font-semibold text-gray-800 appearance-none"
                                                     onChange={handleEmployeeSelect}
                                                     defaultValue=""
                                                 >
@@ -367,7 +367,7 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                                                         ))}
                                                     </optgroup>
                                                 </select>
-                                                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-500">
+                                                <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-400">
                                                     <ChevronDown size={16} />
                                                 </div>
                                             </div>
@@ -375,12 +375,12 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                                         <PayrollInput label="NIK (Auto)" id="nik" name="nik" value={formData.nik} onChange={handleInputChange} />
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <PayrollInput label="Jabatan (Auto)" id="position" name="position" value={formData.position} onChange={handleInputChange} />
                                         <PayrollInput label="Departemen (Auto)" id="department" name="department" value={formData.department} onChange={handleInputChange} />
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <PayrollInput label="Status (Auto)" id="status" name="status" value={formData.status} onChange={handleInputChange} />
                                         <PayrollInput label="Jumlah Hari Masuk" id="attendanceDays" name="attendanceDays" type="number" value={formData.attendanceDays} onChange={handleInputChange} />
                                     </div>
@@ -388,8 +388,8 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                             </div>
 
                             <div>
-                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 border-t pt-4">Penerimaan</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-t border-gray-100 pt-6">Penerimaan</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <PayrollInput label="Upah Pokok" id="basicSalary" name="basicSalary" type="number" value={formData.basicSalary} onChange={handleInputChange} isCurrency />
                                     <PayrollInput label="Tunjangan Jabatan" id="positionAllowance" name="positionAllowance" type="number" value={formData.positionAllowance} onChange={handleInputChange} isCurrency />
                                     <PayrollInput label="Lembur" id="overtime" name="overtime" type="number" value={formData.overtime} onChange={handleInputChange} isCurrency />
@@ -398,8 +398,8 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                             </div>
 
                             <div>
-                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 border-t pt-4">Potongan</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-t border-gray-100 pt-6">Potongan</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <PayrollInput label="Pajak" id="tax" name="tax" type="number" value={formData.tax} onChange={handleInputChange} isCurrency />
                                     <PayrollInput label="Lain-lain" id="otherDeductions" name="otherDeductions" type="number" value={formData.otherDeductions} onChange={handleInputChange} isCurrency />
                                 </div>
@@ -408,10 +408,10 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                     </div>
 
                     {/* 3. STATIC FOOTER */}
-                    <div className="flex-none p-6 bg-white border-t border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
+                    <div className="flex-none p-6 bg-white/80 backdrop-blur-md border-t border-gray-100/50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
                         <button
                             onClick={handleGenerate}
-                            className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3.5 px-6 rounded-xl transition-all transform active:scale-95 shadow-lg shadow-orange-500/30 focus:outline-none focus:ring-4 focus:ring-orange-300 flex items-center justify-center gap-2"
+                            className="w-full bg-gradient-to-r from-orange-500 to-red-500 shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 active:scale-[0.98] rounded-xl font-bold tracking-wide text-white py-3.5 px-6 transition-all transform focus:outline-none focus:ring-4 focus:ring-orange-300 flex items-center justify-center gap-2"
                         >
                             🎯 Generate Slip Gaji
                         </button>
@@ -482,14 +482,18 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                                         PENERIMAAN
                                     </div>
                                     <div className="space-y-2 text-sm">
-                                        <SlipRow label="Gaji Pokok" value={formatNumber(formData.basicSalary)} />
-                                        <SlipRow label="Tunjangan Jabatan" value={formatNumber(formData.positionAllowance)} />
-                                        <SlipRow label="Uang Makan" value={formatNumber(0)} />
-                                        <SlipRow label="Lembur" value={formatNumber(formData.overtime)} />
-                                        <SlipRow label="Paket" value={formatNumber(formData.allowances)} />
+                                        <SlipRow label="Gaji Pokok" value={formatNumber(formData.basicSalary)} rightAlign={true} />
+                                        <SlipRow label="Tunjangan Jabatan" value={formatNumber(formData.positionAllowance)} rightAlign={true} />
+                                        <SlipRow label="Uang Makan" value={formatNumber(0)} rightAlign={true} />
+                                        <SlipRow label="Lembur" value={formatNumber(formData.overtime)} rightAlign={true} />
+                                        <SlipRow label="Paket" value={formatNumber(formData.allowances)} rightAlign={true} />
 
                                         <div className="mt-4 pt-2 border-t border-gray-200 bg-gray-50 p-2 rounded">
-                                            <SlipRow label="Total Penerimaan" value={formatNumber(calculateGross())} isBold={true} />
+                                            <div className="flex items-start font-bold text-green-700">
+                                                <div className="w-1/2">Total Penerimaan</div>
+                                                <div className="w-auto pr-4">:</div>
+                                                <div className="flex-1 text-right font-mono tracking-tight">Rp {formatNumber(calculateGross())}</div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -500,12 +504,16 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                                         POTONGAN
                                     </div>
                                     <div className="space-y-2 text-sm">
-                                        <SlipRow label="PPh 21" value={formatNumber(formData.tax)} />
-                                        <SlipRow label="BPJS Kesehatan" value={formatNumber(0)} />
-                                        <SlipRow label="Lain-lain" value={formatNumber(formData.otherDeductions)} />
+                                        <SlipRow label="PPh 21" value={formatNumber(formData.tax)} rightAlign={true} />
+                                        <SlipRow label="BPJS Kesehatan" value={formatNumber(0)} rightAlign={true} />
+                                        <SlipRow label="Lain-lain" value={formatNumber(formData.otherDeductions)} rightAlign={true} />
 
                                         <div className="mt-4 pt-2 border-t border-gray-200 bg-gray-50 p-2 rounded">
-                                            <SlipRow label="Total Potongan" value={formatNumber(calculateTotalDeductions())} isBold={true} />
+                                            <div className="flex items-start font-bold text-red-600">
+                                                <div className="w-1/2">Total Potongan</div>
+                                                <div className="w-auto pr-4">:</div>
+                                                <div className="flex-1 text-right font-mono tracking-tight">Rp {formatNumber(calculateTotalDeductions())}</div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -517,7 +525,7 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                                     TAKE HOME PAY
                                 </div>
                                 <div className="bg-orange-50 border border-orange-100 flex-1 flex items-center justify-end px-6 py-3">
-                                    <span className="text-xl font-bold text-orange-600">Rp {formatNumber(calculateNet())}</span>
+                                    <span className="text-2xl font-bold text-orange-600 font-mono tracking-tight">Rp {formatNumber(calculateNet())}</span>
                                 </div>
                             </div>
 
