@@ -1,4 +1,55 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+
+// ... (existing imports)
+
+// ... (inside component)
+
+const handleDownloadPDF = async () => {
+    if (!printRef.current) return;
+
+    try {
+        // Show loading state if needed (optional)
+
+        const canvas = await html2canvas(printRef.current, {
+            scale: 2, // Higher scale for better quality
+            useCORS: true, // Enable CORS for images if any
+            logging: false,
+            backgroundColor: '#ffffff' // Ensure white background
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        const imgWidth = 210; // A4 width in mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+        const fileName = `Slip_Gaji_${formData.employeeName.replace(/\s+/g, '_')}_${formData.month.replace(/\s+/g, '_')}.pdf`;
+        pdf.save(fileName);
+
+    } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('Gagal mengunduh PDF. Silakan coba lagi.');
+    }
+};
+
+// ... (rest of component)
+
+<div className="flex gap-3">
+    <button
+        onClick={handleDownloadPDF}
+        className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-black hover:to-black text-white font-bold py-2.5 px-6 rounded-xl transition-all transform hover:scale-105 duration-300 shadow-lg flex items-center gap-2"
+    >
+        📥 Download PDF
+    </button>
+</div>
 import { ArrowLeft, ChevronDown } from 'lucide-react';
 import { GlassDatePicker } from '../../components/ui/GlassDatePicker';
 import { useEmployeeStore } from '../../store/employeeStore';
