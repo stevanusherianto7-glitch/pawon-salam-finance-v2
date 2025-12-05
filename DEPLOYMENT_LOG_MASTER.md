@@ -6,6 +6,24 @@ This file tracks all deployments to production.
 
 ---
 
+## [v1.6.3] - 2025-12-05 16:38
+**Status:** ✅ SUCCESS (Deployed to Cloudflare)
+**Commit:** Refactor(Admin): Transform 'Staff Categorization' to 'User Database Management'
+**Hash:** 385e609
+**URL:** https://pawonsalam-finance-v2.pages.dev
+
+### Summary
+Major refactor of "Manajemen Status Karyawan" to "Manajemen Database User". Replaced complex termination flow with a simple, safe toggle switch.
+
+### Key Changes
+*   **Rebrand:** Screen renamed to "Manajemen Database User".
+*   **UI Overhaul:** Replaced "Ban Button + Modal" with **Status Toggle Switch**.
+*   **Logic:** Simple ON/OFF logic for deactivating users (Freezing).
+*   **Safety:** **Excluded** Business Owner and Super Admin from the list entirely to prevent accidental lockout.
+*   **Cleanup:** Removed complex dropdown filters for Owner/Admin.
+
+---
+
 ## [v1.6.2] - 2025-12-05 16:05
 **Status:** ❌ FAILED (NPM Registry Error 500)
 **Commit:** N/A (Retry of v1.6.1)

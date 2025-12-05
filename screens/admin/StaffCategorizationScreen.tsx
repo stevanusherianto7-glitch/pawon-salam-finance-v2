@@ -16,7 +16,7 @@ const StaffCategorizationScreen: React.FC<Props> = ({ onBack }) => {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [filterDept, setFilterDept] = useState<string>('ALL');
-    const [showInactive, setShowInactive] = useState(false);
+    const [showInactive, setShowInactive] = useState(true);
 
     // Filter logic
     const staffList = employees.filter(e => {
