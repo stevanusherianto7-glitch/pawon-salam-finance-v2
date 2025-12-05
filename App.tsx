@@ -253,17 +253,19 @@ const App = () => {
     <ErrorBoundary>
       <OfflineBanner />
       {/* GLOBAL LAYOUT LOCK */}
-      <div className="h-[100dvh] w-full bg-gray-200 flex justify-center font-sans overflow-hidden overflow-x-hidden print:overflow-visible print:bg-white print:h-auto print:block print:static" style={{ backgroundColor: '#e5e7eb' }}>
-        <div className="w-full max-w-md bg-gray-50 h-full relative flex flex-col border-x border-gray-200 shadow-2xl overflow-hidden overflow-x-hidden print:max-w-none print:w-full print:h-auto print:overflow-visible print:border-none print:shadow-none print:block print:static">
+      {/* GLOBAL LAYOUT LOCK */}
+      <div className="h-[100dvh] w-full bg-gray-200 flex justify-center font-sans overflow-hidden print:overflow-visible print:bg-white print:h-auto print:block print:static" style={{ backgroundColor: '#e5e7eb' }}>
+        {/* APP SHELL (The "MainLayout") */}
+        <div className="w-full max-w-md bg-gray-50 h-full relative flex flex-col border-x border-gray-200 shadow-2xl overflow-hidden print:max-w-none print:w-full print:h-auto print:overflow-visible print:border-none print:shadow-none print:block print:static">
 
           {/* GLOBAL OVERLAYS (Fixed/Absolute) */}
           <ToastContainer />
           <PWAInstallPrompt />
           <OfflineIndicator />
 
-          {/* HEADER SECTION (Sticky Top) - Only on Main Dashboards */}
+          {/* HEADER SECTION (Static) - Only on Main Dashboards */}
           {MAIN_SCREENS.includes(currentScreen) && (
-            <div className={`z-50 sticky top-0 shrink-0 bg-gray-50/95 backdrop-blur-sm ${!MAIN_SCREENS.includes(currentScreen) ? 'hide-global-header' : ''}`}>
+            <div className={`flex-none z-50 sticky top-0 shrink-0 bg-gray-50/95 backdrop-blur-sm ${!MAIN_SCREENS.includes(currentScreen) ? 'hide-global-header' : ''}`}>
               <ImpersonationBanner />
               <SpecialNotificationBanner />
               <NavigationHeader currentScreen={currentScreen} onBack={handleBack} />
@@ -271,14 +273,14 @@ const App = () => {
           )}
 
           {/* CONTENT AREA (Scrollable) */}
-          <div className={`flex-1 overflow-auto overscroll-contain scrollbar-thin relative ${isImpersonating ? '' : ''} print:overflow-visible print:h-auto print:pb-0 print:static`} id="main-content">
+          <main className={`flex-1 overflow-y-auto overscroll-y-contain relative w-full scrollbar-thin ${isImpersonating ? '' : ''} print:overflow-visible print:h-auto print:pb-0 print:static`} id="main-content">
             <PullToRefresh onRefresh={() => window.location.reload()}>
               {renderScreen()}
             </PullToRefresh>
-          </div>
+          </main>
 
-          {/* FOOTER SECTION (Sticky Bottom) */}
-          <div className="z-50 sticky bottom-0 shrink-0 print:hidden pointer-events-none">
+          {/* FOOTER SECTION (Static) */}
+          <div className="flex-none z-50 sticky bottom-0 shrink-0 print:hidden pointer-events-none">
             {isAuthenticated && user && MAIN_SCREENS.includes(currentScreen) && (
               <div className="pointer-events-auto">
                 <BottomTab role={user.role} currentScreen={currentScreen} onNavigate={handleNavigate} />

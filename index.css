@@ -7,26 +7,20 @@
   html,
   body {
     height: 100%;
-    overflow: hidden;
-    /* STOP THE BODY FROM SCROLLING */
-    position: fixed;
-    /* Lock it in place */
     width: 100%;
+    overflow: hidden;
+    /* KILL BODY SCROLL */
+    background-color: #f9fafb;
+    /* Match app theme (gray-50) */
     overscroll-behavior: none;
-    /* Prevent "bounce" effect on iOS */
-    background-color: #f8fafc;
+    /* Disable pull-to-refresh effect */
+    -webkit-overflow-scrolling: touch;
     -webkit-tap-highlight-color: transparent;
-    /* Remove blue tap box */
     user-select: none;
-    /* Prevent text selection */
     touch-action: manipulation;
-    /* Improve touch response */
     font-family: 'Inter', sans-serif;
-    /* Hide scrollbar for IE, Edge and Firefox */
     -ms-overflow-style: none;
-    /* IE and Edge */
     scrollbar-width: none;
-    /* Firefox */
   }
 
   /* Allow text selection only on inputs and paragraphs if needed */
@@ -45,6 +39,8 @@
 
   #root {
     height: 100%;
+    width: 100%;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
   }

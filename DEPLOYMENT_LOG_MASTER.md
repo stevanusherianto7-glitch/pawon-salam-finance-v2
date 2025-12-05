@@ -6,10 +6,38 @@ This file tracks all deployments to production.
 
 ---
 
+## [2025-12-05] Critical Fix: Global Overscroll Gap Elimination
+**Status:** ✅ Pushed to Main (V2)
+**Commit:** Fix(Arch): Implement Native App Shell & Global CSS Reset
+**Hash:** Pending
+**URL:** https://pawon-salam-finance-v2.pages.dev
+
+### Summary
+Implemented a global "Native App Shell" architecture to permanently kill overscroll bounce and white gaps on all screens.
+
+### Key Changes
+*   **Global CSS Reset:** Forced `html`, `body` to `height: 100%`, `overflow: hidden`.
+*   **App Shell:** Refactored `App.tsx` to `flex-col` with `flex-1 overflow-y-auto` content area.
+*   **UX:** Disabled global pull-to-refresh bounce.
+
+## [2025-12-05] Critical Fix: Eliminate Login Screen Overscroll Gap
+**Status:** ✅ Pushed to Main (V2)
+**Commit:** Fix(UI): Refactor Login Screen to Locked App Shell
+**Hash:** Pending
+**URL:** https://pawon-salam-finance-v2.pages.dev
+
+### Summary
+Refactored Login Screen to use a "Locked App Shell" layout, eliminating the overscroll gap and bounce effect.
+
+### Key Changes
+*   **Locked Viewport:** `h-[100dvh] overflow-hidden` on main container.
+*   **Sandwich Layout:** Static Header/Footer, Scrollable Middle.
+*   **Global Safety:** `overscroll-behavior-y: none` in `index.css`.
+
 ## [2025-12-05] Critical Fix: Global Horizontal Scrollbar Cleanup
 **Status:** ✅ Pushed to Main (V2)
 **Commit:** Fix(Layout): Enforce Global Overflow-X-Hidden & Scope Payslip Scroll
-**Hash:** Pending
+**Hash:** ba406fd
 **URL:** https://pawon-salam-finance-v2.pages.dev
 
 ### Summary

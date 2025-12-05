@@ -43,11 +43,11 @@ export const LoginScreen = () => {
     };
 
     return (
-        <div className="flex flex-col h-[100dvh] overflow-hidden bg-gray-50 font-sans relative">
+        <div className="flex flex-col h-[100dvh] w-full overflow-hidden bg-gradient-to-b from-orange-50 to-white font-sans relative">
             <BackgroundPattern />
 
-            {/* BAGIAN ATAS: Logo & Form */}
-            <div className="shrink-0 px-4 pt-6 pb-2 relative z-10 flex flex-col items-center w-full">
+            {/* BAGIAN ATAS: Logo & Form (Static) */}
+            <div className="flex-none px-4 pt-6 pb-2 relative z-10 flex flex-col items-center w-full">
                 <div className="mb-4 animate-slide-in-down">
                     <Logo variant="color" size="lg" />
                 </div>
@@ -115,9 +115,9 @@ export const LoginScreen = () => {
             </div>
 
             {/* BAGIAN TENGAH: List Akun (Scrollable) */}
-            <div className="flex-1 overflow-y-auto px-4 scrollbar-hide w-full max-w-sm mx-auto relative z-10">
+            <div className="flex-1 overflow-y-auto overscroll-contain p-4 scrollbar-hide w-full max-w-sm mx-auto relative z-10">
                 {/* Separator */}
-                <div className="flex items-center gap-3 px-2 py-4 sticky top-0 bg-gray-50/80 backdrop-blur-sm z-20">
+                <div className="flex items-center gap-3 px-2 py-4 sticky top-0 bg-gradient-to-b from-orange-50/95 to-transparent backdrop-blur-sm z-20">
                     <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent flex-1"></div>
                     <p className="text-[9px] font-extrabold text-gray-400 uppercase tracking-widest">Pilih Akun</p>
                     <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent flex-1"></div>
@@ -153,8 +153,8 @@ export const LoginScreen = () => {
                 </div>
             </div>
 
-            {/* BAGIAN BAWAH: Footer */}
-            <div className="py-4 text-center shrink-0 relative z-10">
+            {/* BAGIAN BAWAH: Footer (Static) */}
+            <div className="flex-none py-4 text-center relative z-10">
                 <p className="text-[10px] text-gray-400 font-bold text-shadow-sm flex flex-col items-center gap-1 opacity-80 hover:opacity-100 transition-opacity">
                     <span>&copy; 2025 Pawon Salam Enterprise</span>
                 </p>
