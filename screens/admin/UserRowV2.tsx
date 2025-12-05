@@ -80,7 +80,7 @@ export const UserRowV2 = ({ employee, isSelected, onSelect, onToggleStatus }: Us
             </div>
 
             {/* COL 3: ACTION (Fixed Auto) - RED BORDER DEBUG */}
-            <div className="shrink-0 flex items-center justify-end border-2 border-red-500 p-1 border-dashed">
+            <div className="shrink-0 flex items-center justify-end">
                 <SwitchV2
                     checked={isUserActive}
                     onChange={(e) => onToggleStatus(e, employee)}
