@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
-import { ArrowLeft, ChevronDown, Trash2 } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Trash2, Printer } from 'lucide-react';
 import { GlassDatePicker } from '../../components/ui/GlassDatePicker';
 import { useEmployeeStore } from '../../store/employeeStore';
 import { useAttendanceStore } from '../../store/attendanceStore';
@@ -30,8 +28,8 @@ interface PayrollData {
     otherDeductions: number;
 }
 
-// --- VISUAL COMPONENTS (Copied from CreatePayslip) ---
-
+// --- VISUAL COMPONENTS (For PDF Preview) ---
+// Kept original SVG components for the actual slip design
 const SlipMotifTopRight = () => (
     <div className="absolute top-0 right-0 z-0 pointer-events-none">
         <svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute top-0 right-0 w-[60%] md:w-auto h-auto print:w-[15cm]">
@@ -127,6 +125,7 @@ const SlipSection: React.FC<{ title: string, children: React.ReactNode }> = ({ t
     </div>
 );
 
+// UPDATED PAYROLL INPUT: Handles 0 value and updated styling
 const PayrollInput: React.FC<{
     label: string;
     id: string;
@@ -138,12 +137,12 @@ const PayrollInput: React.FC<{
     isCurrency?: boolean;
 }> = ({ label, id, name, value, onChange, type = 'text', placeholder = '', isCurrency = false }) => (
     <div className="flex flex-col group">
-        <label htmlFor={id} className="mb-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider transition-colors group-focus-within:text-orange-500">
+        <label htmlFor={id} className="mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest transition-colors group-focus-within:text-orange-500">
             {label}
         </label>
         <div className="relative">
             {isCurrency && (
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm font-medium transition-colors group-focus-within:text-orange-500">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 text-sm font-medium transition-colors group-focus-within:text-orange-600">
                     Rp
                 </span>
             )}
@@ -151,11 +150,12 @@ const PayrollInput: React.FC<{
                 id={id}
                 name={name}
                 type={type}
-                value={value}
+                // LOGIC FIX: Show empty string if value is 0 (unless user specifically typed 0, but here we want to clear default 0s)
+                value={value === 0 ? '' : value}
                 onChange={onChange}
-                placeholder={placeholder}
+                placeholder={placeholder || (type === 'number' ? '0' : '')}
                 inputMode={type === 'number' ? 'numeric' : 'text'}
-                className={`w-full px-3 py-2.5 text-sm bg-gray-50 border border-transparent rounded-xl focus:outline-none focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all duration-300 font-semibold text-gray-800 placeholder-gray-300 ${isCurrency ? 'pl-10 font-mono tracking-tight' : ''}`}
+                className={`w-full px-3.5 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all duration-300 font-semibold text-slate-800 placeholder-slate-300 shadow-sm ${isCurrency ? 'pl-11 font-mono tracking-tight' : ''}`}
             />
         </div>
     </div>
@@ -173,8 +173,8 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
 
     // State for the date picker
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-
     const [showSlip, setShowSlip] = useState(false);
+    const [isPrinting, setIsPrinting] = useState(false);
 
     useEffect(() => {
         if (employees.length === 0) {
@@ -213,7 +213,8 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                 }
             });
 
-            // Auto-update form
+            // Auto-update form logic (only overwrites if user hasn't manually edited maybe? For now simple overwrite)
+            // Ideally we should check if isDirty, but for generator, auto-fill is usually preferred.
             setFormData({
                 attendanceDays: daysWorked,
                 overtime: overtimeHours * 20000 // Rate: 20k/hour
@@ -230,7 +231,7 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type } = e.target;
         setFormData({
-            [name]: type === 'number' ? parseFloat(value) || 0 : value,
+            [name]: type === 'number' ? (value === '' ? 0 : parseFloat(value)) : value,
         });
     };
 
@@ -269,7 +270,7 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                 if (employee.role === UserRole.HR_MANAGER) department = 'Human Resources';
                 if (employee.role === UserRole.FINANCE_MANAGER) department = 'Finance & Accounting';
                 if (employee.role === UserRole.MARKETING_MANAGER) department = 'Marketing & Sales';
-                if (employee.role === UserRole.RESTAURANT_MANAGER) department = 'Restaurant Management';
+                if (employee.role === UserRole.RESTAURANT_MANAGER) department = 'Restaurant Manager';
             } else {
                 if (employee.area === EmployeeArea.BOH) department = 'Kitchen (BOH)';
                 if (employee.area === EmployeeArea.FOH) department = 'Service (FOH)';
@@ -322,8 +323,14 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
         return calculateGross() - calculateTotalDeductions();
     };
 
-    const handlePrint = () => {
-        window.print();
+    const handlePrint = async () => {
+        setIsPrinting(true);
+        // Small delay to allow react to render if needed, essentially just window.print() 
+        // OR using PDF generation libs if required. Window print is safer for precise CSS layout.
+        setTimeout(() => {
+            window.print();
+            setIsPrinting(false);
+        }, 500);
     };
 
     const handleGenerate = () => {
@@ -331,51 +338,62 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
     };
 
     return (
-        <div className="min-h-screen bg-orange-50 font-sans print:p-0 print:m-0 print:bg-white">
+        <div className="fixed inset-0 bg-slate-50 flex flex-col w-full h-full overflow-hidden font-sans">
+            <style>
+                {`
+                @media print {
+                    @page { margin: 0; size: auto; }
+                    body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                    /* Hide everything by default */
+                    body > * { visibility: hidden; }
+                    /* Only show the print container */
+                    #print-area, #print-area * { visibility: visible; }
+                    #print-area { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
+                }
+                `}
+            </style>
+
             {!showSlip ? (
-                // FORM VIEW - 3 Part Layout
-                <div className="flex flex-col h-screen max-w-md mx-auto bg-white/90 backdrop-blur-md shadow-[0_4px_20px_rgb(0,0,0,0.05)] rounded-2xl border border-white/20 md:max-w-4xl md:h-auto md:min-h-screen md:my-8 overflow-hidden">
+                // === FORM VIEW: PAWON PROTOCOL LAYOUT ===
+                <>
+                    {/* 1. Header (Fixed Height) */}
+                    <header className="shrink-0 z-30 bg-white/80 backdrop-blur-xl border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-sm">
+                        <button
+                            onClick={onBack}
+                            className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-all active:scale-95"
+                        >
+                            <ArrowLeft size={20} />
+                        </button>
 
-                    {/* 1. STATIC HEADER */}
-                    <div className="flex-none p-6 border-b border-gray-100/50 bg-white/50 backdrop-blur-sm z-10 relative">
-                        <div className="flex items-center justify-between mb-4">
-                            <button onClick={onBack} className="text-gray-500 hover:text-orange-600 transition-colors flex items-center gap-1 text-sm font-medium">
-                                <ArrowLeft size={16} /> Kembali
-                            </button>
-                            <button
-                                onClick={handleReset}
-                                className="text-xs font-bold text-red-500 flex items-center gap-1 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 hover:bg-red-100 transition-colors"
-                            >
-                                <Trash2 size={12} /> Reset Form
-                            </button>
+                        <div className="flex flex-col items-center">
+                            <h1 className="text-lg font-bold text-slate-800 tracking-tight">Slip Gaji</h1>
+                            <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Pawon Salam Finance</p>
                         </div>
-                        <div className="flex items-start gap-4">
-                            <div className="w-16 h-16 text-orange-600 flex-shrink-0">
-                                <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
-                                    <circle cx="50" cy="50" r="44" />
-                                    <path d="M28 72 Q 28 28 72 28 Q 72 72 28 72 Z" />
-                                    <line x1="28" y1="72" x2="72" y2="28" />
-                                    <line x1="28" y1="72" x2="19" y2="81" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h1 className="text-2xl font-bold text-gray-900 leading-tight">Slip Gaji</h1>
-                                <div className="text-gray-600">
-                                    <p className="font-bold text-lg text-gray-800">Pawon Salam</p>
-                                    <p className="text-sm text-gray-500">Resto & Catering</p>
+
+                        <button
+                            onClick={handleReset}
+                            className="w-10 h-10 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-500 flex items-center justify-center transition-all active:scale-95 border border-rose-100"
+                            title="Reset Form"
+                        >
+                            <Trash2 size={18} />
+                        </button>
+                    </header>
+
+                    {/* 2. Content (Scrollable Middle) */}
+                    <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-32">
+                        <div className="max-w-2xl mx-auto space-y-8">
+
+                            {/* Section: Data Karyawan */}
+                            <section className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="w-1 h-6 bg-orange-500 rounded-full"></div>
+                                    <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Data Karyawan</h2>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    {/* 2. SCROLLABLE CONTENT */}
-                    <div className="flex-1 overflow-y-auto p-6 bg-white/30 scrollbar-thin">
-                        <div className="space-y-6">
-                            <div>
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Data Penerima</h3>
                                 <div className="space-y-4">
-                                    <div className="flex flex-col group">
-                                        <label className="mb-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider transition-colors group-focus-within:text-orange-500">Periode Gaji (Bulan & Tahun)</label>
+                                    {/* Month Picker */}
+                                    <div className="flex flex-col">
+                                        <label className="mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Periode Gaji</label>
                                         <GlassDatePicker
                                             selectedDate={selectedDate}
                                             onChange={setSelectedDate}
@@ -385,104 +403,117 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {/* Employee Select with Optgroups */}
-                                        <div className="flex flex-col group">
-                                            <label className="mb-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider transition-colors group-focus-within:text-orange-500">Nama</label>
-                                            <div className="relative">
-                                                <select
-                                                    className="w-full px-3 py-2.5 text-sm bg-gray-50 border border-transparent rounded-xl focus:outline-none focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all duration-300 font-semibold text-gray-800 appearance-none"
-                                                    onChange={handleEmployeeSelect}
-                                                    defaultValue=""
-                                                >
-                                                    <option value="" disabled>Pilih Nama...</option>
-                                                    <optgroup label="MANAGEMENT">
-                                                        {managementEmployees.map(emp => (
-                                                            <option key={emp.id} value={emp.id}>{emp.name}</option>
-                                                        ))}
-                                                    </optgroup>
-                                                    <optgroup label="STAFF">
-                                                        {staffEmployees.map(emp => (
-                                                            <option key={emp.id} value={emp.id}>{emp.name}</option>
-                                                        ))}
-                                                    </optgroup>
-                                                </select>
-                                                <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-400">
-                                                    <ChevronDown size={16} />
-                                                </div>
+                                    {/* Name Dropdown */}
+                                    <div className="flex flex-col group">
+                                        <label className="mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest group-focus-within:text-orange-500">Nama Karyawan</label>
+                                        <div className="relative">
+                                            <select
+                                                className="w-full px-3.5 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all duration-300 font-semibold text-slate-800 appearance-none shadow-sm cursor-pointer"
+                                                onChange={handleEmployeeSelect}
+                                                defaultValue=""
+                                            >
+                                                <option value="" disabled>Pilih Nama Karyawan...</option>
+                                                <optgroup label="MANAGEMENT">
+                                                    {managementEmployees.map(emp => (
+                                                        <option key={emp.id} value={emp.id}>{emp.name}</option>
+                                                    ))}
+                                                </optgroup>
+                                                <optgroup label="STAFF">
+                                                    {staffEmployees.map(emp => (
+                                                        <option key={emp.id} value={emp.id}>{emp.name}</option>
+                                                    ))}
+                                                </optgroup>
+                                            </select>
+                                            <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
+                                                <ChevronDown size={16} />
                                             </div>
                                         </div>
-                                        <PayrollInput label="NIK (Auto)" id="nik" name="nik" value={formData.nik} onChange={handleInputChange} />
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <PayrollInput label="Jabatan (Auto)" id="position" name="position" value={formData.position} onChange={handleInputChange} />
-                                        <PayrollInput label="Departemen (Auto)" id="department" name="department" value={formData.department} onChange={handleInputChange} />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <PayrollInput label="NIK / ID" id="nik" name="nik" value={formData.nik} onChange={handleInputChange} />
+                                        <PayrollInput label="Jabatan" id="position" name="position" value={formData.position} onChange={handleInputChange} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <PayrollInput label="Departemen" id="department" name="department" value={formData.department} onChange={handleInputChange} />
+                                        <PayrollInput label="Status" id="status" name="status" value={formData.status} onChange={handleInputChange} />
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <PayrollInput label="Status (Auto)" id="status" name="status" value={formData.status} onChange={handleInputChange} />
-                                        <PayrollInput label="Jumlah Hari Masuk" id="attendanceDays" name="attendanceDays" type="number" value={formData.attendanceDays} onChange={handleInputChange} />
-                                    </div>
+                                    <PayrollInput label="Jumlah Hari Masuk" id="attendanceDays" name="attendanceDays" type="number" value={formData.attendanceDays} onChange={handleInputChange} />
                                 </div>
-                            </div>
+                            </section>
 
-                            <div>
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-t border-gray-100 pt-6">Penerimaan</h3>
+                            {/* Section: Pendapatan */}
+                            <section className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="w-1 h-6 bg-green-500 rounded-full"></div>
+                                    <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Penerimaan</h2>
+                                </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <PayrollInput label="Upah Pokok" id="basicSalary" name="basicSalary" type="number" value={formData.basicSalary} onChange={handleInputChange} isCurrency />
                                     <PayrollInput label="Tunjangan Jabatan" id="positionAllowance" name="positionAllowance" type="number" value={formData.positionAllowance} onChange={handleInputChange} isCurrency />
                                     <PayrollInput label="Lembur" id="overtime" name="overtime" type="number" value={formData.overtime} onChange={handleInputChange} isCurrency />
-                                    <PayrollInput label="Paket" id="allowances" name="allowances" type="number" value={formData.allowances} onChange={handleInputChange} isCurrency />
+                                    <PayrollInput label="Paket / Tunjangan Lain" id="allowances" name="allowances" type="number" value={formData.allowances} onChange={handleInputChange} isCurrency />
                                 </div>
-                            </div>
+                            </section>
 
-                            <div>
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-t border-gray-100 pt-6">Potongan</h3>
+                            {/* Section: Potongan */}
+                            <section className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="w-1 h-6 bg-rose-500 rounded-full"></div>
+                                    <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Potongan</h2>
+                                </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <PayrollInput label="Pajak" id="tax" name="tax" type="number" value={formData.tax} onChange={handleInputChange} isCurrency />
-                                    <PayrollInput label="Lain-lain" id="otherDeductions" name="otherDeductions" type="number" value={formData.otherDeductions} onChange={handleInputChange} isCurrency />
+                                    <PayrollInput label="Pajak PPh 21" id="tax" name="tax" type="number" value={formData.tax} onChange={handleInputChange} isCurrency />
+                                    <PayrollInput label="Lain-lain / Kasbon" id="otherDeductions" name="otherDeductions" type="number" value={formData.otherDeductions} onChange={handleInputChange} isCurrency />
                                 </div>
-                            </div>
+                            </section>
+
                         </div>
-                    </div>
+                    </main>
 
-                    {/* 3. STATIC FOOTER */}
-                    <div className="flex-none p-6 bg-white/80 backdrop-blur-md border-t border-gray-100/50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
-                        <button
-                            onClick={handleGenerate}
-                            className="w-full bg-gradient-to-r from-orange-500 to-red-500 shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 active:scale-[0.98] rounded-xl font-bold tracking-wide text-white py-3.5 px-6 transition-all transform focus:outline-none focus:ring-4 focus:ring-orange-300 flex items-center justify-center gap-2"
-                        >
-                            🎯 Generate Slip Gaji
-                        </button>
-                    </div>
-                </div>
-            ) : (
-                // PREVIEW VIEW
-                <div className="max-w-4xl mx-auto p-4 md:p-8 animate-slide-in-down">
-                    <div className="mb-6 flex justify-between items-center print:hidden">
-                        <button
-                            onClick={() => setShowSlip(false)}
-                            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition-colors"
-                        >
-                            <ArrowLeft size={20} />
-                            Kembali ke Edit
-                        </button>
-
-                        <div className="flex gap-3">
+                    {/* 3. Footer (Fixed Bottom) */}
+                    <footer className="shrink-0 z-30 bg-white border-t border-slate-200 p-4 pb-6 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                        <div className="max-w-2xl mx-auto flex gap-4">
+                            <div className="flex-1">
+                                <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold mb-1">Total Salary</p>
+                                <p className="text-xl font-bold text-slate-800 tracking-tight">Rp {formatNumber(calculateNet())}</p>
+                            </div>
                             <button
-                                onClick={handlePrint}
-                                className="bg-gray-900 hover:bg-black text-white font-bold py-2.5 px-6 rounded-xl transition-transform transform hover:scale-105 duration-300 shadow-lg flex items-center gap-2"
+                                onClick={handleGenerate}
+                                className="bg-gradient-to-r from-orange-500 to-red-500 shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 active:scale-[0.98] rounded-xl font-bold tracking-wide text-white py-3.5 px-8 transition-all transform focus:outline-none focus:ring-4 focus:ring-orange-300 flex items-center justify-center gap-2"
                             >
-                                🖨️ Cetak / Simpan PDF
+                                Generate Slip <ArrowLeft size={16} className="rotate-180" />
                             </button>
                         </div>
+                    </footer>
+                </>
+            ) : (
+                // === PREVIEW VIEW (Full Screen Overlay) ===
+                <div className="relative w-full h-full bg-slate-800 overflow-y-auto">
+                    {/* Sticky Top Bar for Preview */}
+                    <div className="sticky top-0 left-0 right-0 z-[50] p-4 bg-slate-900/90 backdrop-blur-md flex items-center justify-between border-b border-white/10 print:hidden">
+                        <button
+                            onClick={() => setShowSlip(false)}
+                            className="flex items-center gap-2 text-white/80 hover:text-white font-medium transition-colors px-4 py-2 rounded-lg hover:bg-white/10"
+                        >
+                            <ArrowLeft size={18} />
+                            Edit Data
+                        </button>
+                        <button
+                            onClick={handlePrint}
+                            className="bg-white text-slate-900 hover:bg-orange-50 font-bold py-2 px-4 rounded-xl shadow-lg flex items-center gap-2 transition-all active:scale-95"
+                        >
+                            {isPrinting ? 'Printing...' : <><Printer size={18} /> Print PDF</>}
+                        </button>
                     </div>
 
-                    <div className="w-full overflow-x-auto pb-4 scrollbar-thin">
+                    {/* The Slip Paper */}
+                    <div className="p-4 md:p-10 min-h-full flex justify-center items-start print:p-0 print:m-0">
                         <div
+                            id="print-area"
                             ref={printRef}
-                            className="bg-white rounded-xl shadow-2xl overflow-hidden relative font-serif text-gray-800 print:static print:w-full print:max-w-none print:h-auto print:bg-white print:shadow-none print:rounded-none print:m-0 print:overflow-visible w-[210mm] min-h-[297mm] mx-auto"
+                            className="bg-white rounded-none md:rounded-xl shadow-2xl overflow-hidden relative font-serif text-gray-800 print:w-full print:max-w-none print:h-full print:bg-white print:shadow-none print:rounded-none print:m-0 print:overflow-visible w-[210mm] min-h-[297mm] mx-auto scale-[0.8] origin-top md:scale-100"
                         >
                             <SlipMotifTopLeft />
                             <SlipMotifTopRight />
@@ -490,7 +521,7 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                             <SlipMotifBottomRight />
 
                             {/* Header Area */}
-                            <div className="relative z-20 print:static print:p-8 p-8">
+                            <div className="relative z-20 print:static print:p-8 p-12">
                                 <header className="text-center">
                                     <div className="flex justify-start print:ml-4">
                                         <SlipLogo />
@@ -504,7 +535,7 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                             </div>
 
                             {/* Content Area */}
-                            <div className="px-16 pt-4 pb-32 md:px-32 md:pt-10 md:pb-44 print:static print:px-16 print:pt-4 print:pb-16 relative z-10 flex flex-col justify-between h-full">
+                            <div className="px-16 pt-4 pb-32 md:px-24 md:pt-6 md:pb-44 print:static print:px-16 print:pt-4 print:pb-16 relative z-10 flex flex-col justify-between h-auto min-h-[600px]">
 
                                 {/* Employee Info Grid */}
                                 <div className="grid grid-cols-2 gap-x-12 gap-y-2 mb-8 text-sm border-t-2 border-orange-600 pt-6">
@@ -516,7 +547,7 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                                     <SlipRow label="Grade / Gol" value="-" disableMono={true} />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-8">
+                                <div className="grid grid-cols-2 gap-8 items-start">
                                     {/* LEFT COLUMN: PENERIMAAN */}
                                     <div>
                                         <div className="bg-orange-600 text-white font-bold text-xs uppercase tracking-wider py-1.5 px-3 mb-4 rounded-sm">
