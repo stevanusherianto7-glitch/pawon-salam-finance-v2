@@ -253,8 +253,8 @@ const App = () => {
     <ErrorBoundary>
       <OfflineBanner />
       {/* GLOBAL LAYOUT LOCK */}
-      <div className="h-[100dvh] w-full bg-gray-200 flex justify-center font-sans overflow-hidden print:overflow-visible print:bg-white print:h-auto print:block print:static" style={{ backgroundColor: '#e5e7eb' }}>
-        <div className="w-full max-w-md bg-gray-50 h-full relative flex flex-col border-x border-gray-200 shadow-2xl overflow-hidden print:max-w-none print:w-full print:h-auto print:overflow-visible print:border-none print:shadow-none print:block print:static">
+      <div className="h-[100dvh] w-full bg-gray-200 flex justify-center font-sans overflow-hidden overflow-x-hidden print:overflow-visible print:bg-white print:h-auto print:block print:static" style={{ backgroundColor: '#e5e7eb' }}>
+        <div className="w-full max-w-md bg-gray-50 h-full relative flex flex-col border-x border-gray-200 shadow-2xl overflow-hidden overflow-x-hidden print:max-w-none print:w-full print:h-auto print:overflow-visible print:border-none print:shadow-none print:block print:static">
 
           {/* GLOBAL OVERLAYS (Fixed/Absolute) */}
           <ToastContainer />

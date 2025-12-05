@@ -6,6 +6,20 @@ This file tracks all deployments to production.
 
 ---
 
+## [2025-12-05] Critical Fix: Global Horizontal Scrollbar Cleanup
+**Status:** ✅ Pushed to Main (V2)
+**Commit:** Fix(Layout): Enforce Global Overflow-X-Hidden & Scope Payslip Scroll
+**Hash:** Pending
+**URL:** https://pawon-salam-finance-v2.pages.dev
+
+### Summary
+Fixed a global visual bug where a horizontal scrollbar appeared on every screen. Now, horizontal scrolling is strictly limited to the Payslip Generator preview.
+
+### Key Changes
+*   **Global Lock:** Added `overflow-x-hidden` to the main application shell in `App.tsx`.
+*   **Scoped Scroll:** Explicitly added `overflow-x-auto` to the Payslip Preview container in `CreatePayslip.tsx`.
+*   **Cleanup:** Verified removal of global `w-screen` or negative margin issues.
+
 ## [2025-12-05] Critical Fix: Force Remove Global Header
 **Status:** ✅ Pushed to Main (V2)
 **Commit:** Fix(Layout): Force Remove Global Header & Ghost Padding on Sub-Screens

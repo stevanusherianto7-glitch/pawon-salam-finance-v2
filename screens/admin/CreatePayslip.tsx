@@ -485,7 +485,7 @@ export const CreatePayslip: React.FC<{ onBack?: () => void }> = ({ onBack }) => 
             </div>
 
             {/* SCROLLABLE & SCALABLE CONTENT AREA */}
-            <div className="flex-1 overflow-auto flex justify-center p-4 md:p-8 custom-scrollbar w-full">
+            <div className="flex-1 overflow-auto overflow-x-auto flex justify-center p-4 md:p-8 custom-scrollbar w-full">
                 <div
                     className="origin-top transition-transform duration-300 ease-out"
                     style={{
