@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { ArrowLeft, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Trash2 } from 'lucide-react';
 import { GlassDatePicker } from '../../components/ui/GlassDatePicker';
 import { useEmployeeStore } from '../../store/employeeStore';
 import { UserRole, Employee, EmployeeArea } from '../../types';
+import { usePayslipFormStore } from '../../store/usePayslipFormStore';
 
 // --- INTERFACES ---
 
@@ -165,24 +166,11 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
     const printRef = useRef<HTMLDivElement>(null);
     const { employees, fetchEmployees } = useEmployeeStore();
 
+    // Persistent Store
+    const { formData, setFormData, resetForm } = usePayslipFormStore();
+
     // State for the date picker
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-
-    const [formData, setFormData] = useState<PayrollData>({
-        month: 'NOVEMBER 2025', // Initial default
-        employeeName: '',
-        nik: '',
-        position: '',
-        department: '',
-        status: '',
-        basicSalary: 0,
-        allowances: 0,
-        positionAllowance: 0,
-        attendanceDays: 0,
-        overtime: 0,
-        tax: 0,
-        otherDeductions: 0,
-    });
 
     const [showSlip, setShowSlip] = useState(false);
 
@@ -195,15 +183,20 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
     // Update formData.month when selectedDate changes
     useEffect(() => {
         const formattedMonth = selectedDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }).toUpperCase();
-        setFormData(prev => ({ ...prev, month: formattedMonth }));
-    }, [selectedDate]);
+        setFormData({ month: formattedMonth });
+    }, [selectedDate, setFormData]);
+
+    const handleReset = () => {
+        if (window.confirm("Reset formulir? Data yang belum disimpan akan hilang.")) {
+            resetForm();
+        }
+    };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type } = e.target;
-        setFormData(prev => ({
-            ...prev,
+        setFormData({
             [name]: type === 'number' ? parseFloat(value) || 0 : value,
-        }));
+        });
     };
 
     // Categorize Employees
@@ -243,14 +236,13 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
                 if (employee.area === EmployeeArea.MANAGEMENT) department = 'Management';
             }
 
-            setFormData(prev => ({
-                ...prev,
+            setFormData({
                 employeeName: employee.name,
                 nik: employee.id || 'N/A',
                 position: getRoleDisplayName(employee.role, employee.area),
                 department: department,
                 status: status,
-            }));
+            });
         }
     };
 
@@ -306,9 +298,15 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
 
                     {/* 1. STATIC HEADER */}
                     <div className="flex-none p-6 border-b border-gray-100/50 bg-white/50 backdrop-blur-sm z-10 relative">
-                        <div className="flex items-center gap-2 mb-4">
+                        <div className="flex items-center justify-between mb-4">
                             <button onClick={onBack} className="text-gray-500 hover:text-orange-600 transition-colors flex items-center gap-1 text-sm font-medium">
                                 <ArrowLeft size={16} /> Kembali
+                            </button>
+                            <button
+                                onClick={handleReset}
+                                className="text-xs font-bold text-red-500 flex items-center gap-1 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 hover:bg-red-100 transition-colors"
+                            >
+                                <Trash2 size={12} /> Reset Form
                             </button>
                         </div>
                         <div className="flex items-start gap-4">

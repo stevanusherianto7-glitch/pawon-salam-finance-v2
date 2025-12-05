@@ -1,49 +1,79 @@
 import React, { useState, useEffect } from 'react';
-import { Save, AlertCircle, CheckCircle, Package } from 'lucide-react';
+import { Save, AlertCircle, CheckCircle, Package, RefreshCw, Trash2 } from 'lucide-react';
 import { inventoryApi, StockItem } from '../../services/api';
 import { PanelHeader } from '../../components/PanelHeader';
+import { useStockOpnameStore } from '../../store/useStockOpnameStore';
 
 interface Props {
     onBack: () => void;
     isReadOnly?: boolean;
 }
 
+interface OpnameResult {
+    totalVariance: number;
+    transaction?: {
+        id: string;
+        date: string;
+        desc: string;
+        amount: number;
+        type: string;
+        outlet: string;
+    } | null;
+}
+
 export const StockOpnameScreen: React.FC<Props> = ({ onBack, isReadOnly = false }) => {
-    const [items, setItems] = useState<StockItem[]>([]);
+    // Persistent Store
+    const { items, setItems, updateItemQty, updateItemName, resetStockData, isDirty } = useStockOpnameStore();
+
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
-    const [resultData, setResultData] = useState<any>(null); // TODO: Fix type definition for resultData
+    const [resultData, setResultData] = useState<OpnameResult | null>(null);
 
     const [activeTab, setActiveTab] = useState<'FOH' | 'BOH'>('FOH');
 
-    // Load data
+    // Load data logic
     useEffect(() => {
+        // If read-only, always fetch fresh data
+        if (isReadOnly) {
+            loadFromApi();
+            return;
+        }
+
+        // If not read-only (Input Mode)
+        // Only fetch if store is empty. If store has data (draft), use it.
+        if (items.length === 0) {
+            loadFromApi();
+        }
+    }, [isReadOnly]);
+
+    const loadFromApi = () => {
         setLoading(true);
         inventoryApi.getStock().then(res => {
             if (res.success && res.data) {
-                // Reset physical stock input for fresh entry if not read only
                 const freshItems = res.data.map(i => ({
                     ...i,
-                    physicalStock: (isReadOnly ? i.systemStock : '') as number | '' // If read only, show system stock as placeholder or actual physical if stored
+                    physicalStock: (isReadOnly ? i.systemStock : '') as number | ''
                 }));
                 setItems(freshItems);
             }
             setLoading(false);
         });
-        setSuccess(false);
-    }, [isReadOnly]);
+    };
+
+    const handleReset = () => {
+        if (window.confirm("Hapus draft dan muat ulang data dari sistem? Progress saat ini akan hilang.")) {
+            resetStockData(); // Clear store
+            loadFromApi();    // Fetch fresh
+        }
+    };
 
     const handleStockChange = (id: string, value: string) => {
         const numValue = value === '' ? '' : parseFloat(value);
-        setItems(prev => prev.map(item =>
-            item.id === id ? { ...item, physicalStock: numValue as number | '' } : item
-        ));
+        updateItemQty(id, numValue as number | '');
     };
 
     const handleNameChange = (id: string, newName: string) => {
-        setItems(prev => prev.map(item =>
-            item.id === id ? { ...item, name: newName } : item
-        ));
+        updateItemName(id, newName);
     };
 
     const calculateVariance = (system: number, physical: number | '') => {
@@ -58,9 +88,10 @@ export const StockOpnameScreen: React.FC<Props> = ({ onBack, isReadOnly = false 
             if (res.success) {
                 setResultData(res.data);
                 setSuccess(true);
+                resetStockData(); // Clear draft on success
                 setTimeout(() => {
                     onBack();
-                }, 2000);
+                }, 3000);
             }
         } catch (error) {
             alert("Gagal menyimpan laporan");
@@ -76,6 +107,18 @@ export const StockOpnameScreen: React.FC<Props> = ({ onBack, isReadOnly = false 
             <PanelHeader title="Stock Opname" icon={Package} onBack={onBack} />
 
             <div className="px-4 space-y-4 -mt-6 relative z-10">
+                {/* Actions Bar */}
+                {!isReadOnly && !success && (
+                    <div className="flex justify-end mb-2">
+                        <button
+                            onClick={handleReset}
+                            className="text-xs font-bold text-red-500 flex items-center gap-1 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 hover:bg-red-100 transition-colors"
+                        >
+                            <Trash2 size={12} /> Reset Draft
+                        </button>
+                    </div>
+                )}
+
                 {/* Category Tabs */}
                 <div className="flex gap-3 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
                     <button

@@ -9,7 +9,7 @@ This file tracks all deployments to production.
 ## [2025-12-05] Critical Fix: Global Overscroll Gap Elimination
 **Status:** ✅ Pushed to Main (V2)
 **Commit:** Fix(Arch): Implement Native App Shell & Global CSS Reset
-**Hash:** Pending
+**Hash:** 7d058c8
 **URL:** https://pawon-salam-finance-v2.pages.dev
 
 ### Summary
@@ -23,7 +23,7 @@ Implemented a global "Native App Shell" architecture to permanently kill overscr
 ## [2025-12-05] Critical Fix: Eliminate Login Screen Overscroll Gap
 **Status:** ✅ Pushed to Main (V2)
 **Commit:** Fix(UI): Refactor Login Screen to Locked App Shell
-**Hash:** Pending
+**Hash:** 7d058c8
 **URL:** https://pawon-salam-finance-v2.pages.dev
 
 ### Summary
