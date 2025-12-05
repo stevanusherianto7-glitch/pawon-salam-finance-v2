@@ -6,6 +6,21 @@ This file tracks all deployments to production.
 
 ---
 
+## [2025-12-05] Refactor: Full Immersive Sub-Screens
+**Status:** ✅ Pushed to Main (V2)
+**Commit:** Refactor(Layout): Hide Global Header on Sub-Screens & Fix Back Navigation
+**Hash:** 7a8b9c0
+**URL:** https://pawon-salam-finance-v2.pages.dev
+
+### Summary
+Removed the Global Header (Navbar) from all sub-screens to prevent double headers and maximize screen real estate.
+
+### Key Changes
+*   **Immersive Layout:** Global Header (including `NavigationHeader` and banners) now ONLY renders on Main Dashboards (`dashboard`, `adminDashboard`, `financeDashboard`).
+*   **Sub-Screen Headers:** Sub-screens now rely entirely on their own custom headers for a cleaner look.
+*   **Back Navigation:** Added manual "Back" buttons to `AdminEmployeeListScreen` and `AdminAttendanceListScreen` to replace the removed global back button.
+*   **Overlay Fix:** Moved `ToastContainer`, `PWAInstallPrompt`, and `OfflineIndicator` out of the sticky header container so they remain visible globally.
+
 ## [2025-12-05] Repair: Z-Index & Persistence
 **Status:** ✅ Pushed to Main (V2)
 **Commit:** Fix(UI/Logic): Standardize Z-Index, Safe Areas & Implement HPP Persistence

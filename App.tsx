@@ -148,8 +148,8 @@ const App = () => {
     if ([UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.RESTAURANT_MANAGER, UserRole.HR_MANAGER, UserRole.BUSINESS_OWNER, UserRole.FINANCE_MANAGER, UserRole.MARKETING_MANAGER].includes(user?.role || UserRole.EMPLOYEE)) {
       switch (currentScreen) {
         case 'adminDashboard': return <AdminDashboardScreen onNavigate={handleNavigate} />;
-        case 'adminEmployees': return <AdminEmployeeListScreen />;
-        case 'adminAttendance': return <AdminAttendanceListScreen />;
+        case 'adminEmployees': return <AdminEmployeeListScreen onBack={() => setCurrentScreen('adminDashboard')} />;
+        case 'adminAttendance': return <AdminAttendanceListScreen onBack={() => setCurrentScreen('adminDashboard')} />;
         case 'broadcast': return <BroadcastScreen />;
 
         case 'financePanel': return <FinancePanel onBack={() => setCurrentScreen('adminDashboard')} />;
@@ -256,15 +256,19 @@ const App = () => {
       <div className="h-[100dvh] w-full bg-gray-200 flex justify-center font-sans overflow-hidden print:overflow-visible print:bg-white print:h-auto print:block print:static" style={{ backgroundColor: '#e5e7eb' }}>
         <div className="w-full max-w-md bg-gray-50 h-full relative flex flex-col border-x border-gray-200 shadow-2xl overflow-hidden print:max-w-none print:w-full print:h-auto print:overflow-visible print:border-none print:shadow-none print:block print:static">
 
-          {/* HEADER SECTION (Sticky Top) */}
-          <div className="z-50 sticky top-0 shrink-0 bg-gray-50/95 backdrop-blur-sm">
-            <ImpersonationBanner />
-            <ToastContainer />
-            <SpecialNotificationBanner />
-            <NavigationHeader currentScreen={currentScreen} onBack={handleBack} />
-            <PWAInstallPrompt />
-            <OfflineIndicator />
-          </div>
+          {/* GLOBAL OVERLAYS (Fixed/Absolute) */}
+          <ToastContainer />
+          <PWAInstallPrompt />
+          <OfflineIndicator />
+
+          {/* HEADER SECTION (Sticky Top) - Only on Main Dashboards */}
+          {MAIN_SCREENS.includes(currentScreen) && (
+            <div className="z-50 sticky top-0 shrink-0 bg-gray-50/95 backdrop-blur-sm">
+              <ImpersonationBanner />
+              <SpecialNotificationBanner />
+              <NavigationHeader currentScreen={currentScreen} onBack={handleBack} />
+            </div>
+          )}
 
           {/* CONTENT AREA (Scrollable) */}
           <div className={`flex-1 overflow-auto overscroll-contain scrollbar-thin relative ${isImpersonating ? '' : ''} print:overflow-visible print:h-auto print:pb-0 print:static`} id="main-content">

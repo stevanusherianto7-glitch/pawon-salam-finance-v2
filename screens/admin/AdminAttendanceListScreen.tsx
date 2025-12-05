@@ -5,11 +5,15 @@ import { useAttendanceStore } from '../../store/attendanceStore';
 import { colors } from '../../theme/colors';
 import { AttendanceStatus, UserRole } from '../../types';
 import { attendanceApi } from '../../services/api';
-import { Loader2, User, CheckCircle, Calendar, Clock, MapPin, Search, ChevronRight, Filter } from 'lucide-react';
+import { Loader2, User, CheckCircle, Calendar, Clock, MapPin, Search, ChevronRight, Filter, ArrowLeft } from 'lucide-react';
 import { BackgroundPattern } from '../../components/layout/BackgroundPattern';
 import { GlassDatePicker } from '../../components/ui/GlassDatePicker';
 
-export const AdminAttendanceListScreen = () => {
+interface Props {
+    onBack?: () => void;
+}
+
+export const AdminAttendanceListScreen: React.FC<Props> = ({ onBack }) => {
     const { employees, fetchEmployees } = useEmployeeStore();
     const { history, fetchHistory, isLoading } = useAttendanceStore();
 
@@ -85,9 +89,16 @@ export const AdminAttendanceListScreen = () => {
             <div className="relative z-10 pt-6 pb-4 px-4 rounded-b-[2rem] shadow-lg overflow-hidden" style={{ background: colors.gradientMain }}>
                 <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/food.png")' }}></div>
                 <div className="relative z-10 flex justify-between items-start">
-                    <div>
-                        <h2 className="text-lg font-extrabold text-white mb-0.5 leading-tight">Monitoring Absensi</h2>
-                        <p className="text-white/80 text-[9px] font-medium tracking-wide">Validasi kehadiran & performa harian</p>
+                    <div className="flex items-center gap-3">
+                        {onBack && (
+                            <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 text-white transition-colors">
+                                <ArrowLeft size={20} />
+                            </button>
+                        )}
+                        <div>
+                            <h2 className="text-lg font-extrabold text-white mb-0.5 leading-tight">Monitoring Absensi</h2>
+                            <p className="text-white/80 text-[9px] font-medium tracking-wide">Validasi kehadiran & performa harian</p>
+                        </div>
                     </div>
                     <div className="text-right text-white">
                         <p className="text-lg font-black tracking-tighter">

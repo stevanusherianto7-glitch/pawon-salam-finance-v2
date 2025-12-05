@@ -3,12 +3,16 @@ import React, { useEffect, useState } from 'react';
 import { useEmployeeStore } from '../../store/employeeStore';
 import { useAuthStore } from '../../store/authStore';
 import { colors } from '../../theme/colors';
-import { Plus, Search, User, Mail, Phone, Briefcase, X, Save, Shield, Edit2, Eye, KeyRound, Calendar } from 'lucide-react';
+import { Plus, Search, User, Mail, Phone, Briefcase, X, Save, Shield, Edit2, Eye, KeyRound, Calendar, ArrowLeft } from 'lucide-react';
 import { Employee, UserRole, EmployeeArea } from '../../types';
 import { adminApi } from '../../services/api';
 import { GlassDatePicker } from '../../components/ui/GlassDatePicker';
 
-export const AdminEmployeeListScreen = () => {
+interface Props {
+  onBack?: () => void;
+}
+
+export const AdminEmployeeListScreen: React.FC<Props> = ({ onBack }) => {
   const { user, startImpersonation } = useAuthStore();
   const { employees, fetchEmployees, addEmployee, updateEmployee, isLoading } = useEmployeeStore();
   const [searchTerm, setSearchTerm] = useState('');
@@ -124,9 +128,16 @@ export const AdminEmployeeListScreen = () => {
           style={{ background: colors.gradientMain }}
         >
           <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/food.png")' }}></div>
-          <div className="relative z-10">
-            <h2 className="text-xl font-bold text-white mb-1">Data Pengguna</h2>
-            <p className="text-white/80 text-xs">Kelola user & impersonasi akses</p>
+          <div className="relative z-10 flex items-center gap-3">
+            {onBack && (
+              <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 text-white transition-colors">
+                <ArrowLeft size={20} />
+              </button>
+            )}
+            <div>
+              <h2 className="text-xl font-bold text-white mb-1">Data Pengguna</h2>
+              <p className="text-white/80 text-xs">Kelola user & impersonasi akses</p>
+            </div>
           </div>
         </div>
 
