@@ -1,6 +1,6 @@
 
 // FIX: Added EmployeeArea and SHIFT_COLORS to the import from ../types to resolve reference errors.
-import { ApiResponse, AttendanceLog, Employee, UserRole, ShiftAssignment, ShiftType, JobdeskSubmission, DailyPerformanceSnapshot, PerformanceReview, Payslip, LeaveRequest, EmployeeArea, SHIFT_COLORS, Message, MessageAudience, Transaction } from "../types";
+import { ApiResponse, AttendanceLog, Employee, UserRole, ShiftAssignment, ShiftType, JobdeskSubmission, DailyPerformanceSnapshot, PerformanceReview, Payslip, LeaveRequest, EmployeeArea, SHIFT_COLORS, Message, MessageAudience, Transaction, EmploymentCategory } from "../types";
 import { MOCK_EMPLOYEES, MOCK_ATTENDANCE, MOCK_SHIFTS, MOCK_DAILY_SNAPSHOTS, MOCK_PERFORMANCE_REVIEWS, MOCK_PAYSLIPS, MOCK_LEAVE_REQUESTS, MOCK_MESSAGES } from "./mockData";
 
 // --- SIMULATED MOCK API ---
@@ -97,6 +97,57 @@ export const employeeApi = {
             return (adjustedBDate.getMonth() + 1) === month && adjustedBDate.getDate() === day;
         });
         return createSuccessResponse(birthdays, "Birthdays fetched");
+    },
+    // --- SMART ID GENERATION (SIMULATION) ---
+    getNextSequence: async (role: UserRole, area: EmployeeArea, joinDate: string, category: EmploymentCategory): Promise<ApiResponse<string>> => {
+        // Simulate Network Delay for Pulse Effect
+        await delay(800);
+
+        // 1. Logic Helpers
+        const getIDPrefix = (r: UserRole, c: EmploymentCategory) => {
+            if (r === UserRole.BUSINESS_OWNER) return 'OWN';
+            if (r === UserRole.SUPER_ADMIN) return 'SYS';
+            if ([UserRole.RESTAURANT_MANAGER, UserRole.HR_MANAGER, UserRole.FINANCE_MANAGER, UserRole.MARKETING_MANAGER, UserRole.ADMIN].includes(r)) return 'MGR';
+            if (c === EmploymentCategory.DAILY_WORKER) return 'DW';
+            if (c === EmploymentCategory.PROBATION) return 'PRO';
+            return 'EMP';
+        };
+
+        const getDeptCode = (r: UserRole, a: EmployeeArea) => {
+            if (r === UserRole.BUSINESS_OWNER) return '2025';
+            if (r === UserRole.SUPER_ADMIN) return 'ADMIN';
+            if (r === UserRole.HR_MANAGER) return 'HRD';
+            if (r === UserRole.FINANCE_MANAGER) return 'FIN';
+            if (r === UserRole.MARKETING_MANAGER) return 'MKT';
+            if (r === UserRole.RESTAURANT_MANAGER) return 'OPS';
+            if (a === EmployeeArea.FOH) return 'FOH';
+            if (a === EmployeeArea.BOH) return 'BOH';
+            return 'GEN';
+        };
+
+        // 2. Fetch Current Data
+        const storageData = localStorage.getItem('employee-storage');
+        let employees: Employee[] = [];
+        if (storageData) {
+            try {
+                const parsed = JSON.parse(storageData);
+                employees = parsed.state?.employees || [];
+            } catch (e) {
+                console.error("Failed to parse storage", e);
+            }
+        }
+
+        // 3. Calculate Sequence
+        const prefix = getIDPrefix(role, category);
+        const deptCode = getDeptCode(role, area);
+        const year = new Date(joinDate).getFullYear().toString().slice(-2);
+
+        const pattern = `${prefix}-${deptCode}-${year}`;
+
+        const count = employees.filter(e => e.id.startsWith(pattern)).length;
+        const nextSeq = (count + 1).toString().padStart(3, '0');
+
+        return createSuccessResponse(`${pattern}${nextSeq}`);
     }
 };
 

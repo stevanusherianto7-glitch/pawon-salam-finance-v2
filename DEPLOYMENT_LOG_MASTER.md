@@ -6,6 +6,133 @@ This file tracks all deployments to production.
 
 ---
 
+## [v1.7.7] - 2025-12-05 19:20
+**Status:** ✅ SUCCESS (Project: pawon-salam-finance-v2)
+**Commit:** Fix: Strictly Implemented UserRowV2 + UserListV2 Wrapper
+**URL:** https://pawon-salam-finance-v2.pages.dev
+
+### Key Features
+*   **Iron Layout:** Re-applied `grid-cols-[auto_1fr_auto]` with absolute strictness.
+*   **Wrapper:** Explicitly implemented `UserListV2` container for visual consistency.
+*   **Header V2:** Fully integrated `UserManagementHeaderV2` with sticky glassmorphism.
+*   **Visual Debug:** RED BORDER on Toggles active.
+
+---
+
+## [v1.7.6] - 2025-12-05 19:10
+**Status:** ✅ SUCCESS (Project: pawon-salam-finance-v2)
+**Commit:** Fix: GLOBAL Horizontal Scroll Killer (Root Level & CSS)
+**URL:** https://pawon-salam-finance-v2.pages.dev
+
+### Key Features
+*   **Global CSS:** Enforced `overflow-x-hidden` on `html, body` and fixed `box-sizing` for all elements.
+*   **Root Layout Guard:** Updated `App.tsx` shell to strict `w-full max-w-full overflow-x-hidden`.
+*   **Safety Net:** Prevented `100vw` calculation bugs causing scrollbars.
+
+---
+
+## [v1.7.5] - 2025-12-05 18:45
+**Status:** ✅ SUCCESS (Project: pawon-salam-finance-v2)
+**Commit:** Fix: Abandon Flexbox -> Implement "Iron" CSS Grid Layout
+**URL:** https://pawon-salam-finance-v2.pages.dev
+
+### Key Features
+*   **Grid Architecture:** Implemented `UserRowV2` with `grid-cols-[auto_1fr_auto]` for rigid alignment.
+*   **Visual Debugging:** Added RED BORDER to toggle container to verify alignment.
+*   **Component Separation:** Modularized `UserRowV2.tsx` to prevent legacy code interference.
+*   **Header V2:** New Sticky structure with Title/Subtitle hierarchy.
+
+---
+
+## [v1.7.4] - 2025-12-05 18:05
+**Status:** ✅ SUCCESS (Project: pawon-salam-finance-v2)
+**Commit:** Feat: Complete "User Management" UI Rewrite (Pawon Protocol)
+**URL:** https://pawon-salam-finance-v2.pages.dev
+
+### Key Features
+*   **Mobile-First Layout:** Eliminated horizontal scroll using `overflow-x-hidden` and `max-w-full`.
+*   **Aligned Toggles:** Used strict Flexbox (`flex-1` vs `shrink-0`) to ensure toggles stay vertically aligned on all screens.
+*   **Fintech Header:** Implemented sticky glass header with Title > Subtitle > Controls hierarchy.
+*   **Refactored Components:** `UserCard`, `UserManagementHeader`, and `Switch` are now modular.
+
+---
+
+## [v1.7.3] - 2025-12-05 17:55
+**Status:** ✅ SUCCESS (Project: pawon-salam-finance-v2)
+**Commit:** Fix: Critical PWA Layout (Horizontal Scroll & Overflow)
+**URL:** https://pawon-salam-finance-v2.pages.dev
+
+### Key Fixes
+*   **Horizontal Scroll:** Enforced `w-full max-w-full overflow-x-hidden` on main wrapper.
+*   **Grid Overflow:** Restricted Card List and Detail View to strict `col-span` limits.
+*   **Mobile Header:** Fixed text truncated/alignment in small viewports.
+*   **Target Module:** `StaffCategorizationScreen.tsx` (Manajemen Database User).
+
+---
+
+## [v1.7.2] - 2025-12-05 17:45
+**Status:** ✅ SUCCESS (Project: pawon-salam-finance-v2)
+**Commit:** Fix: Smart ID Persistence (Store now accepts provided ID)
+**URL:** https://pawon-salam-finance-v2.pages.dev
+
+### Key Features
+*   **ID Persistence:** Modified `employeeStore.ts` to accept optional `id` in `addEmployee`.
+*   **Payload Fix:** `AdminEmployeeListScreen.tsx` now correctly passes the previewed ID to the store.
+*   **Result:** The ID shown in "Live Preview" is now GUARANTEED to be the one saved.
+
+---
+
+## [v1.7.1] - 2025-12-05 17:35
+**Status:** ✅ SUCCESS (Project: pawon-salam-finance-v2)
+**Commit:** Feat: Smart ID Generation with Live Preview (Mock Simulation)
+**URL:** https://pawon-salam-finance-v2.pages.dev
+
+### Key Features
+*   **Live ID Preview:** Real-time ID generation (`[STATUS]-[AREA]-[YY][SEQ]`) with pulse animation.
+*   **Deterministic Logic:** Simulate DB sequence using count of existing IDs.
+*   **Form Enhancements:** Added `Join Date` and `Contract Status` fields for precise ID generation.
+*   **Backend Strategy:** Included `backend/controllers/employeeController.ts` for future Express implementation.
+
+---
+
+## [v1.7.0] - 2025-12-05 17:15
+**Status:** ✅ SUCCESS (Project: pawon-salam-finance-v2)
+**Commit:** UI Refactor: Fintech Glassmorphism & Mobile-First Layout
+**URL:** https://pawon-salam-finance-v2.pages.dev
+
+### Key Features
+*   **Mobile-First Architecture:** Detail panel hidden on mobile (`grid-cols-1`), visible on desktop (`grid-cols-12`).
+*   **Fintech Aesthetic:** Glassmorphism cards (`bg-white/40 backdrop-blur-xl`).
+*   **Deep Polish:** -webkit-overflow-scrolling, touch targets > 44px, optimistic UI interactions.
+*   **Header Fix:** Aligned filters and checkboxes properly.
+
+---
+
+## [v1.6.5] - 2025-12-05 17:00
+**Status:** ✅ SUCCESS (New Specific Project)
+**Commit:** Manual redeploy to correct subdomain
+**URL:** https://pawon-salam-finance-v2.pages.dev
+
+### Summary
+Redeployed exactly to the requested subdomain `pawon-salam-finance-v2`. Created new Cloudflare project to match.
+
+---
+
+## [v1.6.4] - 2025-12-05 16:47
+**Status:** ✅ SUCCESS (Deployed to Cloudflare)
+**Commit:** Fix(Admin): Set 'Show Inactive' to TRUE by default
+**Hash:** e256c9c
+**URL:** https://pawonsalam-finance-v2.pages.dev
+
+### Summary
+Addressed user feedback to keep inactive users visible in the list to facilitate development and debugging.
+
+### Key Changes
+*   **Behavior Change:** `showInactive` now defaults to `true`.
+*   **UX:** Toggling a user to "Off" will no longer make them disappear from the list immediately.
+
+---
+
 ## [v1.6.3] - 2025-12-05 16:38
 **Status:** ✅ SUCCESS (Deployed to Cloudflare)
 **Commit:** Refactor(Admin): Transform 'Staff Categorization' to 'User Database Management'

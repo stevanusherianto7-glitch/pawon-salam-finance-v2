@@ -8,12 +8,13 @@
   body {
     height: 100%;
     width: 100%;
-    overflow: hidden;
-    /* KILL BODY SCROLL */
+    max-width: 100%;
+    overflow-x: hidden;
+    /* GLOBAL SCROLL KILLER */
+    overflow-y: hidden;
+    /* Handle scrolling in #root */
     background-color: #f9fafb;
-    /* Match app theme (gray-50) */
     overscroll-behavior: none;
-    /* Disable pull-to-refresh effect */
     -webkit-overflow-scrolling: touch;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
@@ -21,6 +22,13 @@
     font-family: 'Inter', sans-serif;
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* Prevent 100vw overflow bug */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
   }
 
   /* Allow text selection only on inputs and paragraphs if needed */

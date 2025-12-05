@@ -1,13 +1,103 @@
 import React, { useState } from 'react';
+import {
+    ArrowRight, Users, Filter, Search, Ban, CheckCircle,
+    AlertTriangle, Save
+} from 'lucide-react';
 import { useEmployeeStore } from '../../store/employeeStore';
 import { Employee, EmploymentCategory, UserRole, EmployeeArea } from '../../types';
-import { Users, ArrowRight, Save, AlertTriangle, CheckCircle, MoreVertical, Ban, RefreshCw, X } from 'lucide-react';
+import { UserRowV2 } from './UserRowV2';
 
-interface Props {
-    onBack?: () => void;
-}
+// --- HEADER V2 ---
+const UserManagementHeaderV2 = ({
+    onBack,
+    userCount,
+    searchQuery,
+    setSearchQuery,
+    filterDept,
+    setFilterDept,
+    showInactive,
+    setShowInactive
+}: any) => {
+    return (
+        <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-slate-200 shadow-sm w-full">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 w-full">
+                {/* Title Row */}
+                <div className="flex items-center gap-3 w-full mb-4">
+                    {onBack && (
+                        <button onClick={onBack} className="md:hidden p-2 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
+                            <ArrowRight size={18} className="rotate-180" />
+                        </button>
+                    )}
+                    <div className="flex-1 min-w-0">
+                        <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-800 truncate leading-tight">
+                            User Management
+                        </h1>
+                        <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mt-1">
+                            {userCount} REGISTERED USERS • MASTER DATA
+                        </p>
+                    </div>
+                </div>
 
-const StaffCategorizationScreen: React.FC<Props> = ({ onBack }) => {
+                {/* Controls Row */}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between w-full">
+                    {/* Search Input */}
+                    <div className="relative group w-full sm:max-w-xs">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Search className="h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                        </div>
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="block w-full pl-10 pr-3 py-2 bg-slate-100 border-none rounded-lg text-sm font-medium text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all"
+                            placeholder="Find user..."
+                        />
+                    </div>
+
+                    {/* Filters */}
+                    <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
+                        <div className="relative shrink-0">
+                            <select
+                                value={filterDept}
+                                onChange={(e) => setFilterDept(e.target.value)}
+                                className="appearance-none pl-3 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 focus:outline-none focus:border-blue-500 cursor-pointer uppercase tracking-wide"
+                            >
+                                <option value="ALL">All Divisions</option>
+                                <option value="FOH">Front of House</option>
+                                <option value="BOH">Back of House</option>
+                                <option value="MANAGEMENT">Management</option>
+                            </select>
+                            <Filter size={10} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                        </div>
+
+                        <label className="flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors shrink-0">
+                            <div className={`w-3.5 h-3.5 rounded flex items-center justify-center border ${showInactive ? 'bg-slate-800 border-slate-800' : 'border-slate-300 bg-white'}`}>
+                                {showInactive && <CheckCircle className="w-2.5 h-2.5 text-white" />}
+                            </div>
+                            <input
+                                type="checkbox"
+                                checked={showInactive}
+                                onChange={(e) => setShowInactive(e.target.checked)}
+                                className="hidden"
+                            />
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Inactive</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </header>
+    );
+};
+
+// --- USER LIST V2 WRAPPER ---
+const UserListV2 = ({ children }: { children: React.ReactNode }) => (
+    <div className="w-full bg-white/50 backdrop-blur-sm rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+        {children}
+    </div>
+);
+
+// --- MAIN SCREEN ---
+const StaffCategorizationScreen = ({ onBack }: { onBack?: () => void }) => {
     const { employees, updateEmployee } = useEmployeeStore();
     const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
     const [newCategory, setNewCategory] = useState<EmploymentCategory | null>(null);
@@ -18,334 +108,238 @@ const StaffCategorizationScreen: React.FC<Props> = ({ onBack }) => {
     const [filterDept, setFilterDept] = useState<string>('ALL');
     const [showInactive, setShowInactive] = useState(true);
 
-    // Filter logic
+    // Filter Logic
     const staffList = employees.filter(e => {
-        // EXCLUDE OWNER & SUPER ADMIN
-        if (e.role === UserRole.BUSINESS_OWNER || e.role === UserRole.SUPER_ADMIN) {
-            return false;
-        }
+        if (e.role === UserRole.BUSINESS_OWNER || e.role === UserRole.SUPER_ADMIN) return false;
 
         const matchesSearch = e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             e.id.toLowerCase().includes(searchQuery.toLowerCase());
 
         let matchesCategory = true;
         switch (filterDept) {
-            case 'ALL':
-                matchesCategory = true;
-                break;
-            case 'FOH':
-                matchesCategory = e.area === EmployeeArea.FOH;
-                break;
-            case 'BOH':
-                matchesCategory = e.area === EmployeeArea.BOH;
-                break;
-            case 'MANAGEMENT':
-                matchesCategory = [
-                    UserRole.RESTAURANT_MANAGER,
-                    UserRole.HR_MANAGER,
-                    UserRole.FINANCE_MANAGER,
-                    UserRole.MARKETING_MANAGER,
-                    UserRole.ADMIN
-                ].includes(e.role);
-                break;
-            default:
-                matchesCategory = true;
+            case 'ALL': matchesCategory = true; break;
+            case 'FOH': matchesCategory = e.area === EmployeeArea.FOH; break;
+            case 'BOH': matchesCategory = e.area === EmployeeArea.BOH; break;
+            case 'MANAGEMENT': matchesCategory = [UserRole.RESTAURANT_MANAGER, UserRole.HR_MANAGER, UserRole.FINANCE_MANAGER, UserRole.MARKETING_MANAGER, UserRole.ADMIN].includes(e.role); break;
+            default: matchesCategory = true;
         }
 
-        const matchesActive = showInactive ? true : e.isActive !== false; // Default true if undefined
-
+        const matchesActive = showInactive ? true : e.isActive !== false;
         return matchesSearch && matchesCategory && matchesActive;
     });
-
-    const getCategoryColor = (cat: EmploymentCategory) => {
-        switch (cat) {
-            case EmploymentCategory.PERMANENT: return 'bg-blue-100 text-blue-800 border-blue-200';
-            case EmploymentCategory.PROBATION: return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-            case EmploymentCategory.DAILY_WORKER: return 'bg-gray-100 text-gray-800 border-gray-200';
-            default: return 'bg-gray-50 text-gray-500';
-        }
-    };
-
-    const getCategoryLabel = (cat: EmploymentCategory) => {
-        switch (cat) {
-            case EmploymentCategory.PERMANENT: return 'Karyawan Tetap';
-            case EmploymentCategory.PROBATION: return 'Masa Percobaan';
-            case EmploymentCategory.DAILY_WORKER: return 'Harian (Daily Worker)';
-            default: return cat;
-        }
-    };
-
-    const handlePromote = async () => {
-        if (!selectedEmployee || !newCategory) return;
-
-        setIsProcessing(true);
-
-        const generateNewId = (category: EmploymentCategory, area: EmployeeArea, oldId: string) => {
-            const parts = oldId.split('-');
-            if (parts.length >= 3) {
-                const seqPart = parts[parts.length - 1]; // Last part is sequence
-
-                let prefix = 'EMP';
-                if (category === EmploymentCategory.PROBATION) prefix = 'PRO';
-                if (category === EmploymentCategory.DAILY_WORKER) prefix = 'DW';
-
-                let deptCode = 'MGT';
-                if (selectedEmployee.area === EmployeeArea.FOH) deptCode = 'FOH';
-                if (selectedEmployee.area === EmployeeArea.BOH) deptCode = 'BOH';
-
-                // Maintain year if present
-                const year = new Date().getFullYear().toString().slice(-2);
-
-                // Simple reconstruction based on new logic
-                return `${prefix}-${deptCode}-${year}${seqPart.slice(-3)}`;
-            }
-            return oldId;
-        };
-
-        const newId = generateNewId(newCategory, selectedEmployee.area, selectedEmployee.id);
-
-        const success = await updateEmployee(selectedEmployee.id, {
-            category: newCategory,
-            id: newId
-        });
-
-        if (success) {
-            setSuccessMessage(`Berhasil mengubah status ${selectedEmployee.name} menjadi ${getCategoryLabel(newCategory)}. ID Baru: ${newId}`);
-            setTimeout(() => {
-                setSuccessMessage(null);
-                setSelectedEmployee(null);
-                setNewCategory(null);
-            }, 3000);
-        }
-
-        setIsProcessing(false);
-    };
 
     const handleToggleStatus = async (e: React.MouseEvent, employee: Employee) => {
         e.stopPropagation();
         const currentStatus = employee.isActive !== false;
         const newStatus = !currentStatus;
 
-        // Prevent disabling Owner/Super Admin easily
-        if (!newStatus && (employee.role === UserRole.BUSINESS_OWNER || employee.role === UserRole.SUPER_ADMIN)) {
-            if (!window.confirm("PERHATIAN: Anda akan menonaktifkan akun Owner/Admin Sistem. Anda yakin?")) {
-                return;
-            }
-        }
-
         setIsProcessing(true);
         const success = await updateEmployee(employee.id, {
             isActive: newStatus,
-            // Clear reason/date if activating, set generic if deactivating
             deactivationDate: newStatus ? undefined : new Date().toISOString().split('T')[0],
             deactivationReason: newStatus ? undefined : 'Manually Deactivated by HR'
         });
+        setIsProcessing(false);
+    };
+
+    const handlePromote = async () => {
+        if (!selectedEmployee || !newCategory) return;
+        setIsProcessing(true);
+
+        const generateNewId = (category: EmploymentCategory, area: EmployeeArea, oldId: string) => {
+            const parts = oldId.split('-');
+            if (parts.length >= 3) {
+                const seqPart = parts[parts.length - 1];
+                let prefix = 'EMP';
+                if (category === EmploymentCategory.PROBATION) prefix = 'PRO';
+                if (category === EmploymentCategory.DAILY_WORKER) prefix = 'DW';
+                let deptCode = 'MGT';
+                if (selectedEmployee.area === EmployeeArea.FOH) deptCode = 'FOH';
+                if (selectedEmployee.area === EmployeeArea.BOH) deptCode = 'BOH';
+                const year = new Date().getFullYear().toString().slice(-2);
+                return `${prefix}-${deptCode}-${year}${seqPart.slice(-3)}`;
+            }
+            return oldId;
+        };
+
+        const newId = generateNewId(newCategory, selectedEmployee.area, selectedEmployee.id);
+        const success = await updateEmployee(selectedEmployee.id, { category: newCategory, id: newId });
 
         if (success) {
-            setSuccessMessage(`Akses pengguna ${employee.name} berhasil ${newStatus ? 'DIAKTIFKAN' : 'DINONAKTIFKAN'}.`);
-            setTimeout(() => setSuccessMessage(null), 2000);
+            setSuccessMessage(`ID UPDATED: ${newId}`);
+            setTimeout(() => {
+                setSuccessMessage(null);
+                setSelectedEmployee(null);
+                setNewCategory(null);
+            }, 3000);
         }
         setIsProcessing(false);
     };
 
+    const getCategoryLabel = (cat: EmploymentCategory) => {
+        switch (cat) {
+            case EmploymentCategory.PERMANENT: return 'Permanen';
+            case EmploymentCategory.PROBATION: return 'Probation';
+            case EmploymentCategory.DAILY_WORKER: return 'Daily Worker';
+            default: return cat;
+        }
+    };
+
     return (
-        <div className="p-6 pb-24 space-y-6 min-h-screen bg-gray-50/50">
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                <div className="flex items-center gap-3">
-                    {onBack && (
-                        <button onClick={onBack} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
-                            <ArrowRight size={20} className="text-gray-600 rotate-180" />
-                        </button>
-                    )}
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Manajemen Database User</h1>
-                        <p className="text-gray-500">Kelola akses, status aktif, dan data pengguna</p>
-                    </div>
-                </div>
+        <main className="w-full max-w-full min-h-screen overflow-x-hidden bg-slate-50 font-sans text-slate-900 pb-20">
+            <UserManagementHeaderV2
+                onBack={onBack}
+                userCount={staffList.length}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                filterDept={filterDept}
+                setFilterDept={setFilterDept}
+                showInactive={showInactive}
+                setShowInactive={setShowInactive}
+            />
 
-                {/* Search & Filter Controls */}
-                <div className="flex flex-wrap gap-3 items-center">
-                    <div className="relative">
-                        <input
-                            type="text"
-                            placeholder="Cari Nama / ID..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white w-full md:w-64"
-                        />
-                        <Users className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    </div>
-                    <select
-                        value={filterDept}
-                        onChange={(e) => setFilterDept(e.target.value)}
-                        className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
-                    >
-                        <option value="ALL">Semua User</option>
-                        <option value="FOH">Front of House</option>
-                        <option value="BOH">Back of House</option>
-                        <option value="MANAGEMENT">Management</option>
-                    </select>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 w-full items-start">
 
-                    <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
-                        <input
-                            type="checkbox"
-                            checked={showInactive}
-                            onChange={(e) => setShowInactive(e.target.checked)}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        Tampilkan Non-Aktif
-                    </label>
-                </div>
-            </div>
+                    {/* LEFT: LIST VIEW (Desktop: col-span-4 / Mobile: Full) */}
+                    <section className={`md:col-span-12 lg:col-span-4 w-full ${selectedEmployee ? 'hidden md:block' : 'block'}`}>
+                        <UserListV2>
+                            {staffList.length === 0 ? (
+                                <div className="text-center py-20 px-4 border-2 border-dashed border-slate-100 rounded-xl bg-slate-50/50">
+                                    <Users className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                                    <p className="text-slate-500 font-bold text-xs uppercase tracking-wider">No Users Found</p>
+                                </div>
+                            ) : (
+                                <div>
+                                    {staffList.map((employee) => (
+                                        <UserRowV2
+                                            key={employee.id}
+                                            employee={employee}
+                                            isSelected={selectedEmployee?.id === employee.id}
+                                            onSelect={() => {
+                                                setSelectedEmployee(employee);
+                                                setNewCategory(employee.category);
+                                            }}
+                                            onToggleStatus={handleToggleStatus}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </UserListV2>
+                    </section>
 
-            {successMessage && (
-                <div className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 sticky top-6 z-20 shadow-md">
-                    <CheckCircle className="w-5 h-5" />
-                    {successMessage}
-                </div>
-            )}
+                    {/* RIGHT: DETAIL VIEW (Desktop: col-span-8 / Mobile: Full when selected) */}
+                    <section className={`md:col-span-12 lg:col-span-8 w-full ${!selectedEmployee ? 'hidden md:block' : 'block'}`}>
+                        {selectedEmployee ? (
+                            <div className="sticky top-40 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                                {/* Mobile Header for Detail */}
+                                <div className="md:hidden flex items-center gap-2 mb-4 bg-white/50 backdrop-blur p-3 rounded-lg border border-slate-200">
+                                    <button
+                                        onClick={() => setSelectedEmployee(null)}
+                                        className="p-1 rounded-full bg-slate-200 text-slate-600 hover:bg-slate-300"
+                                    >
+                                        <ArrowRight size={16} className="rotate-180" />
+                                    </button>
+                                    <span className="font-bold text-sm text-slate-700 uppercase tracking-wide">Back to List</span>
+                                </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Employee List */}
-                <div className="lg:col-span-2 space-y-4">
-                    {staffList.length === 0 ? (
-                        <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
-                            <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                            <p className="text-gray-500">Tidak ada user ditemukan</p>
-                        </div>
-                    ) : (
-                        staffList.map((employee) => {
-                            const isUserActive = employee.isActive !== false;
-                            return (
-                                <div
-                                    key={employee.id}
-                                    onClick={() => {
-                                        setSelectedEmployee(employee);
-                                        setNewCategory(employee.category);
-                                    }}
-                                    className={`bg-white p-4 rounded-xl border transition-all cursor-pointer hover:shadow-md ${selectedEmployee?.id === employee.id ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-100 shadow-sm'} ${!isUserActive ? 'opacity-75 bg-gray-50' : ''}`}
-                                >
-                                    <div className="flex justify-between items-center">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-full bg-gray-100 overflow-hidden relative">
-                                                <img src={employee.avatarUrl || `https://ui-avatars.com/api/?name=${employee.name}`} alt={employee.name} className={`w-full h-full object-cover ${!isUserActive ? 'grayscale' : ''}`} />
-                                                {!isUserActive && (
-                                                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                                                        <Ban className="text-white w-6 h-6" />
-                                                    </div>
-                                                )}
+                                <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xl shadow-slate-200/40">
+                                    <div className="h-24 bg-gradient-to-r from-slate-900 to-slate-800 relative">
+                                        <div className="absolute -bottom-8 left-8">
+                                            <div className="w-16 h-16 rounded-xl border-[4px] border-white shadow-lg overflow-hidden bg-white">
+                                                <img
+                                                    src={selectedEmployee.avatarUrl || `https://ui-avatars.com/api/?name=${selectedEmployee.name}`}
+                                                    className={`w-full h-full object-cover ${selectedEmployee.isActive === false && 'grayscale'}`}
+                                                />
                                             </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-10 px-8 pb-8">
+                                        <div className="flex justify-between items-start mb-6">
                                             <div>
-                                                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                                                    {employee.name}
-                                                    {!isUserActive && <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full uppercase tracking-wide">Non-Aktif</span>}
-                                                </h3>
-                                                <div className="flex items-center gap-2 text-sm text-gray-500">
-                                                    <span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded">{employee.id}</span>
-                                                    <span>•</span>
-                                                    <span className="truncate max-w-[150px]">{employee.department}</span>
+                                                <h2 className="text-xl font-bold text-slate-900">{selectedEmployee.name}</h2>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase track-wide">{selectedEmployee.id}</span>
+                                                    <span className="text-slate-400 text-xs font-medium">{selectedEmployee.department}</span>
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        {/* TOGGLE SWITCH CAPSULE */}
-                                        <div className="flex flex-col items-end gap-2">
-                                            <div
-                                                onClick={(e) => handleToggleStatus(e, employee)}
-                                                className={`relative w-14 h-7 rounded-full transition-colors duration-200 ease-in-out cursor-pointer flex items-center px-1 ${isUserActive ? 'bg-green-500' : 'bg-gray-300'}`}
-                                                title={isUserActive ? "Klik untuk Nonaktifkan" : "Klik untuk Aktifkan"}
-                                            >
-                                                <div className={`w-5 h-5 rounded-full bg-white shadow-sm transform transition-transform duration-200 ${isUserActive ? 'translate-x-7' : 'translate-x-0'}`} />
-                                                <span className={`absolute text-[9px] font-bold text-white ${isUserActive ? 'left-2' : 'right-2'}`}>
-                                                    {isUserActive ? 'ON' : 'OFF'}
-                                                </span>
+                                            <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${selectedEmployee.isActive !== false ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                                                {selectedEmployee.isActive !== false ? 'Active' : 'Inactive'}
                                             </div>
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-medium border ${getCategoryColor(employee.category)}`}>
-                                                {getCategoryLabel(employee.category)}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            )
-                        })
-                    )}
-                </div>
-
-                {/* Action Panel */}
-                <div className="lg:col-span-1">
-                    {selectedEmployee ? (
-                        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-lg sticky top-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-4">Edit Status User</h3>
-
-                            <div className="space-y-4">
-                                <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                                    <label className="text-xs font-medium text-gray-500 uppercase">Status & Kategori</label>
-                                    <div className="font-medium text-gray-900 mt-1">{getCategoryLabel(selectedEmployee.category)}</div>
-                                    <div className="text-xs text-gray-400 mt-1">ID: {selectedEmployee.id}</div>
-                                    <div className={`mt-2 inline-flex items-center px-2 py-1 rounded text-xs font-bold ${selectedEmployee.isActive !== false ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-                                        {selectedEmployee.isActive !== false ? '✅ User Aktif' : '⛔ User Non-Aktif'}
-                                    </div>
-                                </div>
-
-                                {/* ONLY SHOW CATEGORY CHANGE IF ACTIVE */}
-                                {selectedEmployee.isActive !== false ? (
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-700">Promosi / Mutasi Kategori</label>
-                                        <div className="space-y-2">
-                                            {[EmploymentCategory.DAILY_WORKER, EmploymentCategory.PROBATION, EmploymentCategory.PERMANENT].map((cat) => (
-                                                <button
-                                                    key={cat}
-                                                    onClick={() => setNewCategory(cat)}
-                                                    className={`w-full text-left px-4 py-3 rounded-lg border transition-all flex items-center justify-between ${newCategory === cat ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 hover:border-gray-300'}`}
-                                                >
-                                                    <span className="text-sm font-medium">{getCategoryLabel(cat)}</span>
-                                                    {newCategory === cat && <CheckCircle className="w-4 h-4 text-blue-500" />}
-                                                </button>
-                                            ))}
                                         </div>
 
-                                        {newCategory && newCategory !== selectedEmployee.category && (
-                                            <>
-                                                <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg flex gap-3">
-                                                    <AlertTriangle className="w-5 h-5 text-yellow-600 shrink-0" />
-                                                    <div className="text-xs text-yellow-700">
-                                                        <span className="font-bold">Perhatian:</span> ID Baru akan digenerate otomatis.
+                                        <div className="grid grid-cols-1 gap-6">
+                                            <div>
+                                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Category Management</h3>
+                                                <div className="space-y-2">
+                                                    {[EmploymentCategory.DAILY_WORKER, EmploymentCategory.PROBATION, EmploymentCategory.PERMANENT].map((cat) => (
+                                                        <button
+                                                            key={cat}
+                                                            disabled={selectedEmployee.category === cat || selectedEmployee.isActive === false}
+                                                            onClick={() => setNewCategory(cat)}
+                                                            className={`w-full flex items-center justify-between p-3 rounded-lg border text-xs font-medium transition-all
+                                                                ${newCategory === cat
+                                                                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                                                    : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-600'
+                                                                }
+                                                                ${selectedEmployee.category === cat ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : ''}
+                                                            `}
+                                                        >
+                                                            <span>{getCategoryLabel(cat)}</span>
+                                                            {newCategory === cat && <CheckCircle size={14} className="text-blue-500" />}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {successMessage && (
+                                                <div className="bg-green-50 border border-green-200 text-green-700 p-3 rounded-lg text-xs font-bold flex items-center gap-2">
+                                                    <CheckCircle className="w-4 h-4" />
+                                                    {successMessage}
+                                                </div>
+                                            )}
+
+                                            {selectedEmployee.isActive === false ? (
+                                                <div className="bg-red-50 border border-red-100 p-4 rounded-lg text-center">
+                                                    <Ban className="w-6 h-6 text-red-400 mx-auto mb-2" />
+                                                    <p className="text-red-800 font-bold text-xs uppercase">Account Frozen</p>
+                                                </div>
+                                            ) : (
+                                                newCategory && newCategory !== selectedEmployee.category && (
+                                                    <div className="space-y-3 pt-2">
+                                                        <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg flex gap-3 text-xs text-yellow-800">
+                                                            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                                                            <p>
+                                                                System will generate a <strong>NEW ID</strong>. Ensure physical contract is updated.
+                                                            </p>
+                                                        </div>
+                                                        <button
+                                                            onClick={handlePromote}
+                                                            disabled={isProcessing}
+                                                            className="w-full bg-slate-900 text-white py-3 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-black transition-colors flex items-center justify-center gap-2"
+                                                        >
+                                                            {isProcessing ? <span className="animate-pulse">PROCESSING...</span> : <><Save size={14} /> SAVE CHANGES</>}
+                                                        </button>
                                                     </div>
-                                                </div>
-
-                                                <button
-                                                    onClick={handlePromote}
-                                                    disabled={isProcessing}
-                                                    className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors shadow-lg shadow-blue-200"
-                                                >
-                                                    {isProcessing ? 'Menyimpan...' : (
-                                                        <>
-                                                            <Save className="w-4 h-4" />
-                                                            Simpan Status Baru
-                                                        </>
-                                                    )}
-                                                </button>
-                                            </>
-                                        )}
+                                                )
+                                            )}
+                                        </div>
                                     </div>
-                                ) : (
-                                    <div className="p-4 bg-red-50 rounded-xl border border-red-100 text-center">
-                                        <Ban className="w-8 h-8 text-red-400 mx-auto mb-2" />
-                                        <p className="text-sm font-bold text-red-800">Akun Dibekukan</p>
-                                        <p className="text-xs text-red-600 mt-1">User ini tidak dapat diakses atau diedit sampai diaktifkan kembali menggunakan toggle di daftar.</p>
-                                    </div>
-                                )}
+                                </div>
                             </div>
-                        </div>
-                    ) : (
-                        <div className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm text-center text-gray-400">
-                            <Users className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                            <p>Pilih user dari daftar untuk melihat detail.</p>
-                        </div>
-                    )}
+                        ) : (
+                            // Empty State / Placeholder for Desktop
+                            <div className="h-[400px] flex flex-col items-center justify-center text-center text-slate-400 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+                                <Users className="w-12 h-12 opacity-20 mb-3" />
+                                <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wide">Select User</h3>
+                                <p className="text-xs text-slate-400 max-w-[200px]">Select a user from the list to view details.</p>
+                            </div>
+                        )}
+                    </section>
                 </div>
             </div>
-        </div>
+        </main>
     );
 };
 

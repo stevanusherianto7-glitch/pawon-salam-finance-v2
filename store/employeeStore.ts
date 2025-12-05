@@ -7,7 +7,7 @@ interface EmployeeState {
   employees: Employee[];
   isLoading: boolean;
   fetchEmployees: () => Promise<void>;
-  addEmployee: (data: Omit<Employee, 'id' | 'avatarUrl'>) => Promise<boolean>;
+  addEmployee: (data: Omit<Employee, 'id' | 'avatarUrl'> & { id?: string }) => Promise<boolean>;
   updateEmployee: (id: string, data: Partial<Employee>) => Promise<boolean>;
   seedEmployees: () => void;
 }
@@ -85,9 +85,12 @@ export const useEmployeeStore = create<EmployeeState>()(
       addEmployee: async (data) => {
         set({ isLoading: true });
         try {
-          // Generate Smart ID
-          const currentCount = get().employees.length + 1;
-          const newId = generateSmartId(data.role, data.category, data.area, currentCount);
+          // Generate Smart ID if not provided
+          let newId = data.id;
+          if (!newId) {
+            const currentCount = get().employees.length + 1;
+            newId = generateSmartId(data.role, data.category, data.area, currentCount);
+          }
 
           const newEmployee = {
             ...data,

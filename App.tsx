@@ -269,7 +269,7 @@ const App = () => {
       {/* GLOBAL LAYOUT LOCK */}
       <div className="h-[100dvh] w-full bg-gray-200 flex justify-center font-sans overflow-hidden print:overflow-visible print:bg-white print:h-auto print:block print:static" style={{ backgroundColor: '#e5e7eb' }}>
         {/* APP SHELL (The "MainLayout") */}
-        <div className="w-full max-w-md bg-gray-50 h-full relative flex flex-col border-x border-gray-200 shadow-2xl overflow-hidden print:max-w-none print:w-full print:h-auto print:overflow-visible print:border-none print:shadow-none print:block print:static">
+        <div className="w-full max-w-md bg-gray-50 h-full relative flex flex-col border-x border-gray-200 shadow-2xl overflow-hidden overflow-x-hidden print:max-w-none print:w-full print:h-auto print:overflow-visible print:border-none print:shadow-none print:block print:static">
 
           {/* GLOBAL OVERLAYS (Fixed/Absolute) */}
           <ToastContainer />
@@ -286,7 +286,7 @@ const App = () => {
           )}
 
           {/* CONTENT AREA (Scrollable) */}
-          <main className={`flex-1 overflow-y-auto overscroll-y-contain relative w-full scrollbar-thin ${isImpersonating ? '' : ''} print:overflow-visible print:h-auto print:pb-0 print:static`} id="main-content">
+          <main className={`flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain relative w-full max-w-full scrollbar-thin ${isImpersonating ? '' : ''} print:overflow-visible print:h-auto print:pb-0 print:static`} id="main-content">
             <PullToRefresh onRefresh={() => window.location.reload()}>
               {renderScreen()}
             </PullToRefresh>

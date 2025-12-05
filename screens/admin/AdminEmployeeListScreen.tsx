@@ -1,11 +1,10 @@
-
 import React, { useEffect, useState } from 'react';
 import { useEmployeeStore } from '../../store/employeeStore';
 import { useAuthStore } from '../../store/authStore';
 import { colors } from '../../theme/colors';
-import { Plus, Search, User, Mail, Phone, Briefcase, X, Save, Shield, Edit2, Eye, KeyRound, Calendar, ArrowLeft } from 'lucide-react';
-import { Employee, UserRole, EmployeeArea } from '../../types';
-import { adminApi } from '../../services/api';
+import { Plus, Search, User, Mail, Phone, Briefcase, X, Save, Shield, Edit2, Eye, KeyRound, Calendar, ArrowLeft, Loader2, CheckCircle, RefreshCw } from 'lucide-react';
+import { Employee, UserRole, EmployeeArea, EmploymentCategory } from '../../types';
+import { adminApi, employeeApi } from '../../services/api'; // Added employeeApi
 import { GlassDatePicker } from '../../components/ui/GlassDatePicker';
 
 interface Props {
@@ -26,16 +25,40 @@ export const AdminEmployeeListScreen: React.FC<Props> = ({ onBack }) => {
     name: '',
     email: '',
     phone: '',
-    birthDate: '', // Added birthDate
-    pin: '', // Added PIN field
+    birthDate: '',
+    joinDate: new Date().toISOString().split('T')[0], // New Field
+    pin: '',
     department: '',
     role: UserRole.EMPLOYEE,
     area: EmployeeArea.FOH,
+    category: EmploymentCategory.PROBATION // New Field
   });
+
+  // Smart ID State
+  const [idPreview, setIdPreview] = useState('');
+  const [isCalculatingId, setIsCalculatingId] = useState(false);
 
   useEffect(() => {
     fetchEmployees();
   }, []);
+
+  // SMART ID GENERATION EFFECT
+  useEffect(() => {
+    if (!isModalOpen || editingId) return; // Don't generate for edit mode
+
+    const fetchSmartId = async () => {
+      setIsCalculatingId(true);
+      // Simulate "Thinking" time for UX
+      const res = await employeeApi.getNextSequence(formData.role, formData.area, formData.joinDate, formData.category);
+      if (res.success && res.data) {
+        setIdPreview(res.data);
+      }
+      setIsCalculatingId(false);
+    };
+
+    const timer = setTimeout(fetchSmartId, 600); // 600ms Debounce
+    return () => clearTimeout(timer);
+  }, [formData.role, formData.area, formData.category, formData.joinDate, isModalOpen, editingId]);
 
   const filteredEmployees = employees.filter(e =>
     e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -45,7 +68,13 @@ export const AdminEmployeeListScreen: React.FC<Props> = ({ onBack }) => {
   // Reset form when opening for Add
   const handleOpenAdd = () => {
     setEditingId(null);
-    setFormData({ name: '', email: '', phone: '', birthDate: '', pin: '123456', department: '', role: UserRole.EMPLOYEE, area: EmployeeArea.FOH });
+    setFormData({
+      name: '', email: '', phone: '', birthDate: '',
+      joinDate: new Date().toISOString().split('T')[0],
+      pin: '123456', department: '', role: UserRole.EMPLOYEE, area: EmployeeArea.FOH,
+      category: EmploymentCategory.PROBATION
+    });
+    setIdPreview('Calculating...');
     setIsModalOpen(true);
   };
 
@@ -60,12 +89,15 @@ export const AdminEmployeeListScreen: React.FC<Props> = ({ onBack }) => {
       name: emp.name,
       email: emp.email,
       phone: emp.phone || '',
-      birthDate: emp.birthDate || '', // Populate birthDate
-      pin: '', // Don't show existing PIN for security, allow overwrite
+      birthDate: emp.birthDate || '',
+      joinDate: emp.joinedDate || '',
+      pin: '',
       department: emp.department,
       role: emp.role,
       area: emp.area,
+      category: emp.category
     });
+    setIdPreview(emp.id); // Fixed ID for edit
     setIsModalOpen(true);
   };
 
@@ -76,14 +108,20 @@ export const AdminEmployeeListScreen: React.FC<Props> = ({ onBack }) => {
     const isConfirmed = window.confirm(
       editingId
         ? "Apakah anda yakin ingin menyimpan perubahan data karyawan ini?"
-        : "Apakah anda yakin ingin menambahkan karyawan baru?"
+        : `Konfirmasi ID: ${idPreview}\nTambahkan karyawan baru?`
     );
 
     if (!isConfirmed) return;
 
     let success = false;
-    // Clean up empty PIN if editing so we don't overwrite with empty string
-    const payload = { ...formData };
+    // Map form data to Employee type
+    const payload = {
+      ...formData,
+      joinedDate: formData.joinDate, // Map to correct key
+      isActive: true // Default active
+    };
+    // Remove temporary form fields not in Employee type
+    delete (payload as any).joinDate;
     if (editingId && !payload.pin) {
       delete (payload as any).pin;
     }
@@ -91,29 +129,25 @@ export const AdminEmployeeListScreen: React.FC<Props> = ({ onBack }) => {
     if (editingId) {
       success = await updateEmployee(editingId, payload);
     } else {
-      success = await addEmployee(payload);
+      // Use the previewed ID
+      const newEmployeeData = { ...payload, id: idPreview };
+      success = await addEmployee(newEmployeeData);
     }
 
     if (success) {
       alert(editingId ? 'Data karyawan berhasil diperbarui!' : 'Karyawan berhasil ditambahkan!');
       setIsModalOpen(false);
-      setFormData({ name: '', email: '', phone: '', birthDate: '', pin: '', department: '', role: UserRole.EMPLOYEE, area: EmployeeArea.FOH });
       setEditingId(null);
     } else {
       alert('Gagal menyimpan data. Cek kembali inputan.');
     }
   };
 
-  // IMPERSONATION HANDLER
   const handleViewAs = async (targetUser: Employee) => {
     if (user?.role !== UserRole.SUPER_ADMIN) return;
-
     const confirm = window.confirm(`View app as ${targetUser.name}? You will see exactly what they see.`);
     if (confirm) {
-      // 1. Log audit in backend
       await adminApi.logImpersonationStart(user.id, targetUser.id);
-
-      // 2. Switch Context
       startImpersonation(targetUser);
     }
   };
@@ -141,7 +175,7 @@ export const AdminEmployeeListScreen: React.FC<Props> = ({ onBack }) => {
           </div>
         </div>
 
-        {/* Search Bar - MOVED OUTSIDE header to prevent clipping, using negative margin to pull up */}
+        {/* Search Bar */}
         <div className="px-4 -mt-6 relative z-20">
           <div className="bg-white rounded-xl flex items-center px-3 py-2.5 border border-gray-200 shadow-lg">
             <Search size={18} className="text-gray-400 mr-2" />
@@ -173,7 +207,7 @@ export const AdminEmployeeListScreen: React.FC<Props> = ({ onBack }) => {
           </button>
         </div>
 
-        {/* List - COMPACT MODE */}
+        {/* List */}
         {isLoading && employees.length === 0 ? (
           <div className="text-center py-10 text-gray-400">Memuat data...</div>
         ) : filteredEmployees.length === 0 ? (
@@ -186,7 +220,6 @@ export const AdminEmployeeListScreen: React.FC<Props> = ({ onBack }) => {
         ) : (
           filteredEmployees.map((emp) => (
             <div key={emp.id} className="bg-white p-2.5 rounded-xl border border-gray-100 flex items-center gap-3 relative overflow-hidden group shadow-sm hover:shadow-md transition-all">
-              {/* Avatar Compact */}
               <div className="relative flex-shrink-0">
                 <img src={emp.avatarUrl} alt={emp.name} className="w-9 h-9 rounded-full bg-gray-200 object-cover border border-gray-100" />
                 {emp.role === UserRole.ADMIN && (
@@ -195,8 +228,6 @@ export const AdminEmployeeListScreen: React.FC<Props> = ({ onBack }) => {
                   </div>
                 )}
               </div>
-
-              {/* Info Compact */}
               <div className="flex-1 min-w-0 pr-14">
                 <div className="flex items-center gap-2">
                   <h3 className="font-bold text-gray-800 truncate text-xs leading-tight">{emp.name}</h3>
@@ -208,10 +239,7 @@ export const AdminEmployeeListScreen: React.FC<Props> = ({ onBack }) => {
                   </a>
                 </div>
               </div>
-
-              {/* ACTIONS Compact */}
               <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-1">
-                {/* VIEW AS BUTTON (SUPER ADMIN ONLY) */}
                 {user?.role === UserRole.SUPER_ADMIN && emp.id !== user.id && (
                   <button
                     onClick={() => handleViewAs(emp)}
@@ -221,7 +249,6 @@ export const AdminEmployeeListScreen: React.FC<Props> = ({ onBack }) => {
                     <Eye size={12} />
                   </button>
                 )}
-
                 {user?.role === UserRole.SUPER_ADMIN && (
                   <button
                     onClick={() => handleOpenEdit(emp)}
@@ -249,12 +276,106 @@ export const AdminEmployeeListScreen: React.FC<Props> = ({ onBack }) => {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-4 space-y-2.5 max-h-[80vh] overflow-y-auto">
+            <form onSubmit={handleSubmit} className="p-4 space-y-4 max-h-[80vh] overflow-y-auto">
+
+              {/* SMART ID SECTION */}
+              {!editingId && (
+                <div className={`p-4 rounded-xl border-2 transition-all duration-300 ${isCalculatingId ? 'border-blue-300 bg-blue-50/50' : 'border-green-200 bg-green-50/50'}`}>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1 mb-1">
+                    System ID (Auto-Generated)
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        readOnly
+                        value={idPreview}
+                        className={`w-full bg-white border font-mono font-bold text-lg tracking-wider px-3 py-2 rounded-lg outline-none transition-all ${isCalculatingId ? 'text-gray-400 animate-pulse border-blue-200' : 'text-gray-800 border-green-300 shadow-sm'}`}
+                      />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        {isCalculatingId ? (
+                          <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                        ) : (
+                          <CheckCircle className="w-5 h-5 text-green-500" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  {isCalculatingId && (
+                    <p className="text-[10px] text-blue-600 mt-1.5 font-medium animate-pulse">Calculating deterministic sequence from database...</p>
+                  )}
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-gray-500 uppercase">Role System</label>
+                  <select
+                    value={formData.role}
+                    onChange={e => setFormData({ ...formData, role: e.target.value as UserRole })}
+                    className="w-full text-xs p-2 rounded-lg border bg-gray-50 focus:bg-white outline-none"
+                  >
+                    <option value={UserRole.EMPLOYEE}>Staff</option>
+                    <option value={UserRole.RESTAURANT_MANAGER}>Restaurant Manager</option>
+                    <option value={UserRole.HR_MANAGER}>HR Manager</option>
+                    <option value={UserRole.FINANCE_MANAGER}>Finance Manager</option>
+                    <option value={UserRole.MARKETING_MANAGER}>Marketing Manager</option>
+                    <option value={UserRole.BUSINESS_OWNER}>Business Owner</option>
+                    <option value={UserRole.SUPER_ADMIN}>IT Super Admin</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-gray-500 uppercase">Area Kerja</label>
+                  <select
+                    value={formData.area}
+                    onChange={e => setFormData({ ...formData, area: e.target.value as EmployeeArea })}
+                    className="w-full text-xs p-2 rounded-lg border bg-gray-50 focus:bg-white outline-none"
+                  >
+                    <option value={EmployeeArea.FOH}>Front of House</option>
+                    <option value={EmployeeArea.BOH}>Back of House</option>
+                    <option value={EmployeeArea.MANAGEMENT}>Management</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-gray-500 uppercase">Status Kontrak</label>
+                  <select
+                    value={formData.category}
+                    onChange={e => setFormData({ ...formData, category: e.target.value as EmploymentCategory })}
+                    className="w-full text-xs p-2 rounded-lg border bg-gray-50 focus:bg-white outline-none"
+                  >
+                    <option value={EmploymentCategory.PROBATION}>Probation (Percobaan)</option>
+                    <option value={EmploymentCategory.DAILY_WORKER}>Daily Worker</option>
+                    <option value={EmploymentCategory.PERMANENT}>Permanent (Tetap)</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-gray-500 uppercase">Tanggal Masuk</label>
+                  <GlassDatePicker
+                    selectedDate={formData.joinDate ? new Date(formData.joinDate) : undefined}
+                    onChange={(date) => setFormData({ ...formData, joinDate: date.toISOString().split('T')[0] })}
+                    placeholder="Join Date"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-1">
                 <label className="text-[9px] font-bold text-gray-500 uppercase">Nama Lengkap</label>
                 <div className="flex items-center border rounded-lg px-2.5 py-1.5 bg-gray-50 focus-within:bg-white focus-within:border-orange-500 transition-colors">
                   <User size={14} className="text-gray-400 mr-2" />
                   <input required type="text" className="flex-1 bg-transparent outline-none text-xs" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[9px] font-bold text-gray-500 uppercase">Departemen (Label)</label>
+                <div className="flex items-center border rounded-lg px-2.5 py-1.5 bg-gray-50 focus-within:bg-white focus-within:border-orange-500 transition-colors">
+                  <Briefcase size={14} className="text-gray-400 mr-2" />
+                  <input required type="text" placeholder="e.g. Waiter, Barista, Cook" className="flex-1 bg-transparent outline-none text-xs" value={formData.department} onChange={e => setFormData({ ...formData, department: e.target.value })} />
                 </div>
               </div>
 
@@ -266,24 +387,26 @@ export const AdminEmployeeListScreen: React.FC<Props> = ({ onBack }) => {
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[9px] font-bold text-gray-500 uppercase">No. HP (Login Staff)</label>
-                <div className="flex items-center border rounded-lg px-2.5 py-1.5 bg-gray-50 focus-within:bg-white focus-within:border-orange-500 transition-colors">
-                  <Phone size={14} className="text-gray-400 mr-2" />
-                  <input required type="tel" className="flex-1 bg-transparent outline-none text-xs" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-gray-500 uppercase">No. HP (Login Staff)</label>
+                  <div className="flex items-center border rounded-lg px-2.5 py-1.5 bg-gray-50 focus-within:bg-white focus-within:border-orange-500 transition-colors">
+                    <Phone size={14} className="text-gray-400 mr-2" />
+                    <input required type="tel" className="flex-1 bg-transparent outline-none text-xs" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-1">
-                <label className="text-[9px] font-bold text-gray-500 uppercase">Tanggal Lahir</label>
-                <GlassDatePicker
-                  selectedDate={formData.birthDate ? new Date(formData.birthDate) : undefined}
-                  onChange={(date) => {
-                    const dateStr = date.toISOString().split('T')[0];
-                    setFormData({ ...formData, birthDate: dateStr });
-                  }}
-                  placeholder="Pilih Tanggal Lahir"
-                />
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-gray-500 uppercase">Tanggal Lahir</label>
+                  <GlassDatePicker
+                    selectedDate={formData.birthDate ? new Date(formData.birthDate) : undefined}
+                    onChange={(date) => {
+                      const dateStr = date.toISOString().split('T')[0];
+                      setFormData({ ...formData, birthDate: dateStr });
+                    }}
+                    placeholder="Birth Date"
+                  />
+                </div>
               </div>
 
               {/* SECURITY SECTION */}
@@ -299,58 +422,21 @@ export const AdminEmployeeListScreen: React.FC<Props> = ({ onBack }) => {
                       placeholder={editingId ? "Biarkan kosong jika tidak diubah" : "Buat PIN baru (Default: 123456)"}
                       className="flex-1 bg-transparent outline-none text-xs tracking-widest font-bold text-gray-700"
                       value={formData.pin}
-                      onChange={e => setFormData({ ...formData, pin: e.target.value.replace(/\D/g, '') })}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, '');
+                        setFormData({ ...formData, pin: val });
+                      }}
                     />
                   </div>
-                  {editingId && <p className="text-[8px] text-orange-400 mt-0.5">*Isi hanya jika ingin mereset PIN karyawan.</p>}
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[9px] font-bold text-gray-500 uppercase">Jabatan/Divisi</label>
-                <div className="flex items-center border rounded-lg px-2.5 py-1.5 bg-gray-50 focus-within:bg-white focus-within:border-orange-500 transition-colors">
-                  <Briefcase size={14} className="text-gray-400 mr-2" />
-                  <input required type="text" className="flex-1 bg-transparent outline-none text-xs" value={formData.department} onChange={e => setFormData({ ...formData, department: e.target.value })} />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2.5">
-                <div className="space-y-1">
-                  <label className="text-[9px] font-bold text-gray-500 uppercase">Role</label>
-                  <select
-                    className="w-full border rounded-lg px-2 py-1.5 bg-gray-50 text-[10px] outline-none h-[32px]"
-                    value={formData.role}
-                    onChange={e => {
-                      const newRole = e.target.value as UserRole;
-                      // Auto-set area to MANAGEMENT if role is not EMPLOYEE
-                      let newArea = formData.area;
-                      if (newRole !== UserRole.EMPLOYEE) {
-                        newArea = EmployeeArea.MANAGEMENT;
-                      }
-                      setFormData({ ...formData, role: newRole, area: newArea });
-                    }}
-                  >
-                    <option value={UserRole.EMPLOYEE}>Staff</option>
-                    <option value={UserRole.RESTAURANT_MANAGER}>Restaurant Manager</option>
-                    <option value={UserRole.HR_MANAGER}>HR Manager</option>
-                    <option value={UserRole.FINANCE_MANAGER}>Finance Manager</option>
-                    <option value={UserRole.MARKETING_MANAGER}>Marketing Manager</option>
-                    <option value={UserRole.BUSINESS_OWNER}>Business Owner</option>
-                    <option value={UserRole.SUPER_ADMIN}>Super Admin</option>
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[9px] font-bold text-gray-500 uppercase">Area</label>
-                  <select className="w-full border rounded-lg px-2 py-1.5 bg-gray-50 text-[10px] outline-none h-[32px]" value={formData.area} onChange={e => setFormData({ ...formData, area: e.target.value as EmployeeArea })}>
-                    <option value={EmployeeArea.FOH}>FOH (Front of House)</option>
-                    <option value={EmployeeArea.BOH}>BOH (Back of House)</option>
-                    <option value={EmployeeArea.MANAGEMENT}>Management</option>
-                  </select>
-                </div>
-              </div>
-
-              <button type="submit" disabled={isLoading} className="w-full mt-3 py-2 rounded-xl font-bold text-white flex justify-center items-center active:scale-95 transition-all text-xs shadow-lg" style={{ background: colors.gradientMain }}>
-                {isLoading ? 'Menyimpan...' : <><Save size={14} className="mr-2" /> {editingId ? 'Simpan Perubahan' : 'Simpan Data'}</>}
+              <button
+                type="submit"
+                className="w-full py-3 rounded-xl font-bold text-white shadow-lg shadow-orange-500/20 active:scale-95 transition-all text-sm mt-4"
+                style={{ background: colors.primary }}
+              >
+                {editingId ? 'Simpan Perubahan' : 'Buat User Baru'}
               </button>
             </form>
           </div>
