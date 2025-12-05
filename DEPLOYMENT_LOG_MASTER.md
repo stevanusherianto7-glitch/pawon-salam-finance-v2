@@ -6,6 +6,23 @@ This file tracks all deployments to production.
 
 ---
 
+## [2025-12-05 13:28] - Critical Fix: Data Persistence Implementation
+**Status:** ✅ Pushed to Main (V2)
+**Commit:** Fix(State): Implement Data Persistence for Stock Opname & Payslip
+**Hash:** 454e9e2
+**URL:** https://pawon-salam-finance-v2.pages.dev
+
+### Summary
+Implemented robust state management (Zustand + Persist) to prevent data loss on browser refresh for critical operational screens.
+
+### Key Changes
+*   **New Stores:** `useStockOpnameStore` and `usePayslipFormStore` with local storage persistence.
+*   **Refactor:** Updated `StockOpnameScreen` and `PayslipGeneratorScreen` to use persistent stores.
+*   **UI:** Added "Reset" buttons to manually clear drafts.
+*   **Type Safety:** Fixed `any` usage in Stock Opname.
+
+---
+
 ## [2025-12-05] Critical Fix: Global Overscroll Gap Elimination
 **Status:** ✅ Pushed to Main (V2)
 **Commit:** Fix(Arch): Implement Native App Shell & Global CSS Reset

@@ -24,7 +24,8 @@ export enum LeaveType {
 }
 
 export enum LeaveStatus {
-  PENDING = 'PENDING',
+  PENDING_MANAGER = 'PENDING_MANAGER',
+  PENDING_HR = 'PENDING_HR',
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED'
 }
@@ -88,8 +89,14 @@ export const SHIFT_COLORS = {
   [ShiftType.MIDDLE]: '#22C55E'   // Green-500
 };
 
+export enum EmploymentCategory {
+  PERMANENT = 'PERMANENT', // Tetap
+  PROBATION = 'PROBATION', // Percobaan
+  DAILY_WORKER = 'DAILY_WORKER' // Harian
+}
+
 export interface Employee {
-  id: string;
+  id: string; // Smart ID: [STATUS]-[DEPT]-[YEAR][SEQ]
   name: string;
   email: string;
   phone?: string;
@@ -98,6 +105,8 @@ export interface Employee {
   role: UserRole;
   department: string;
   area: EmployeeArea;
+  category: EmploymentCategory; // New field
+  joinedDate: string; // YYYY-MM-DD
   avatarUrl?: string;
   birthDate?: string; // YYYY-MM-DD
 }

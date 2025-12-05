@@ -10,6 +10,8 @@ import { DailyJobdeskScreen } from './screens/employee/DailyJobdeskScreen';
 import { MyPayslips } from './screens/employee/MyPayslips';
 import { AdminDashboardScreen } from './screens/admin/AdminDashboardScreen';
 import { AdminEmployeeListScreen } from './screens/admin/AdminEmployeeListScreen';
+import StaffCategorizationScreen from "./screens/admin/StaffCategorizationScreen";
+import { BonusConfigScreen } from './screens/admin/BonusConfigScreen';
 import { AdminAttendanceListScreen } from './screens/admin/AdminAttendanceListScreen';
 import { PerformanceFormScreen } from './screens/admin/PerformanceFormScreen';
 import { PerformanceDetailScreen } from './screens/admin/PerformanceDetailScreen';
@@ -60,6 +62,8 @@ import { haptics } from './utils/haptics';
 import { OfflineBanner } from './components/OfflineBanner';
 import { PullToRefresh } from './components/PullToRefresh';
 import { StockOpnameScreen } from './screens/admin/StockOpnameScreen';
+import { PerformanceAuditScreen } from './screens/admin/PerformanceAuditScreen';
+import { JobdeskScreen } from './screens/employee/JobdeskScreen';
 
 const App = () => {
   const { isAuthenticated, user, isImpersonating } = useAuthStore();
@@ -149,6 +153,8 @@ const App = () => {
       switch (currentScreen) {
         case 'adminDashboard': return <AdminDashboardScreen onNavigate={handleNavigate} />;
         case 'adminEmployees': return <AdminEmployeeListScreen onBack={() => setCurrentScreen('adminDashboard')} />;
+        case 'staffCategorization': return <StaffCategorizationScreen onBack={() => setCurrentScreen('adminDashboard')} />;
+        case 'bonusConfig': return <BonusConfigScreen onBack={() => setCurrentScreen('adminDashboard')} />;
         case 'adminAttendance': return <AdminAttendanceListScreen onBack={() => setCurrentScreen('adminDashboard')} />;
         case 'broadcast': return <BroadcastScreen />;
 
@@ -245,7 +251,14 @@ const App = () => {
 
       case 'certificate': return <EmployeeDashboardScreen onNavigate={handleNavigate} />;
 
-      default: return <EmployeeDashboardScreen onNavigate={handleNavigate} />;
+      case 'stockOpname':
+        return <StockOpnameScreen onNavigate={handleNavigate} onBack={handleBack} />;
+      case 'performanceAudit':
+        return <PerformanceAuditScreen onNavigate={handleNavigate} onBack={handleBack} />;
+      case 'dailyJobdesk':
+        return <JobdeskScreen onNavigate={handleNavigate} />;
+      default:
+        return (<EmployeeDashboardScreen onNavigate={handleNavigate} />);
     }
   };
 

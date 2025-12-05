@@ -439,11 +439,24 @@ export const leaveApi = {
         await delay(500);
         return createSuccessResponse(MOCK_LEAVE_REQUESTS.filter(r => r.employeeId === id));
     },
+    getAllRequests: async (): Promise<ApiResponse<LeaveRequest[]>> => {
+        await delay(500);
+        return createSuccessResponse(MOCK_LEAVE_REQUESTS);
+    },
     submitRequest: async (data: any) => {
         await delay(500);
-        const newRequest: LeaveRequest = { ...data, id: `lr-${Date.now()}`, status: 'PENDING' };
+        const newRequest: LeaveRequest = { ...data, id: `lr-${Date.now()}`, status: 'PENDING_MANAGER' };
         MOCK_LEAVE_REQUESTS.unshift(newRequest);
         return createSuccessResponse(newRequest, "Submitted");
+    },
+    updateStatus: async (id: string, status: any): Promise<ApiResponse<LeaveRequest>> => {
+        await delay(400);
+        const index = MOCK_LEAVE_REQUESTS.findIndex(r => r.id === id);
+        if (index > -1) {
+            MOCK_LEAVE_REQUESTS[index].status = status;
+            return createSuccessResponse(MOCK_LEAVE_REQUESTS[index], "Status updated");
+        }
+        return createErrorResponse("Request not found");
     }
 };
 

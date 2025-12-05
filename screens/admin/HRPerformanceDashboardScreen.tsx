@@ -3,7 +3,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { colors } from '../../theme/colors';
 import { performanceApi } from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
-import { LogOut, Camera, TrendingUp, Users, Filter, Download, AlertCircle, Crown, Award, ChevronRight, Banknote, Calendar, Trophy } from 'lucide-react';
+import { usePointStore } from '../../store/usePointStore';
+import { LogOut, Camera, TrendingUp, Users, Filter, Download, AlertCircle, Crown, Award, ChevronRight, Banknote, Calendar, Trophy, Sparkles } from 'lucide-react';
 import { DashboardAnalytics, EmployeeOfTheMonth, UserRole } from '../../types';
 import { PeriodFilter } from '../../components/PeriodFilter';
 
@@ -73,6 +74,27 @@ export const HRPerformanceDashboardScreen: React.FC<Props> = ({ onNavigate }) =>
         setYear(period.year);
     };
 
+    const handleFinalizeEOTM = () => {
+        const winner = usePointStore.getState().calculateEOTM(month, year);
+        if (winner) {
+            alert(`Winner Calculated: ${winner.name} (Score: ${winner.score.toFixed(1)})`);
+            // In real app, save to DB via API
+            setEotm({
+                employeeId: winner.employeeId,
+                name: winner.name,
+                department: 'Unknown', // Need to fetch
+                avatarUrl: winner.avatarUrl,
+                periodMonth: month,
+                periodYear: year,
+                avgScore: winner.score,
+                achievementBadge: 'Star Employee',
+                description: 'Top Performer based on Points & Audit Scores'
+            });
+        } else {
+            alert('Not enough data to determine EOTM.');
+        }
+    };
+
     return (
         <div className="bg-gray-50 pb-24 min-h-screen overflow-y-auto">
             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
@@ -114,7 +136,7 @@ export const HRPerformanceDashboardScreen: React.FC<Props> = ({ onNavigate }) =>
                     <div className="py-10 text-center text-gray-400 text-xs">Data tidak tersedia.</div>
                 ) : (
                     <>
-                        {eotm && (
+                        {eotm ? (
                             <button onClick={() => onNavigate && onNavigate('certificate')} className="w-full bg-white rounded-xl p-2.5 border border-orange-100 shadow-sm flex items-center justify-between relative overflow-hidden active:scale-98">
                                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-yellow-400 to-orange-500"></div>
                                 <div className="flex items-center gap-2.5 pl-2">
@@ -125,9 +147,14 @@ export const HRPerformanceDashboardScreen: React.FC<Props> = ({ onNavigate }) =>
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <span className="text-base font-bold text-gray-800">{eotm.avgScore}</span>
+                                    <span className="text-base font-bold text-gray-800">{eotm.avgScore.toFixed(1)}</span>
                                     <span className="text-[8px] text-gray-400 block">Score</span>
                                 </div>
+                            </button>
+                        ) : (
+                            <button onClick={handleFinalizeEOTM} className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl p-3 shadow-lg shadow-orange-200 flex items-center justify-center gap-2 active:scale-95 transition-all">
+                                <Sparkles size={16} />
+                                <span className="font-bold text-xs">Finalize & Award EOTM</span>
                             </button>
                         )}
 

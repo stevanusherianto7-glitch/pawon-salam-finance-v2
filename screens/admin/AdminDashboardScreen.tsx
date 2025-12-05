@@ -114,6 +114,8 @@ export const AdminDashboardScreen: React.FC<AdminDashboardProps> = ({ onNavigate
     return (
         <div className="pb-32 bg-gray-50 min-h-screen">
             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
+
+            {/* --- HEADER --- */}
             {user?.role === UserRole.BUSINESS_OWNER ? (
                 <div className="pt-8 pb-16 px-4 rounded-b-[2.5rem] relative overflow-hidden bg-[#0B0F19] shadow-2xl">
                     <div className="absolute top-[-50%] left-1/2 transform -translate-x-1/2 w-[150%] h-[100%] bg-gradient-to-b from-amber-600/20 via-amber-900/5 to-transparent blur-3xl rounded-full pointer-events-none"></div>
@@ -174,6 +176,7 @@ export const AdminDashboardScreen: React.FC<AdminDashboardProps> = ({ onNavigate
                                 <span className="text-[9px] text-white font-medium bg-white/20 px-2 py-0.5 rounded-full border border-white/20">{getRoleDisplayName(user?.role || UserRole.ADMIN)}</span>
                             </div>
                             <button onClick={logout} className="p-1.5 bg-black/20 hover:bg-black/30 rounded-full text-white backdrop-blur-sm border border-white/10"><LogOut size={14} /></button>
+                            <div className="bg-green-500/20 px-2 py-0.5 rounded text-[9px] font-bold border border-green-500/30 text-green-300">Active</div>
                         </div>
                     </div>
                 </div>
@@ -182,49 +185,43 @@ export const AdminDashboardScreen: React.FC<AdminDashboardProps> = ({ onNavigate
             {/* --- CONTENT --- */}
             {user?.role === UserRole.BUSINESS_OWNER ? (
                 <div className="px-4 -mt-12 relative z-10 space-y-3">
-                    {/* BENTO GRID MENU - PREMIUM GLASS STYLE */}
+                    {/* EOTM Section */}
+                    {eotm && (
+                        <div className="bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-sm border border-orange-100 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="relative">
+                                    <img src={eotm.avatarUrl} className="w-10 h-10 rounded-full object-cover border-2 border-orange-200" />
+                                    <div className="absolute -bottom-1 -right-1 bg-orange-500 text-white text-[8px] px-1.5 py-0.5 rounded-full font-bold shadow-sm">★</div>
+                                </div>
+                                <div>
+                                    <p className="text-[9px] font-bold text-orange-600 uppercase tracking-wider">Employee of the Month</p>
+                                    <p className="font-bold text-sm text-gray-800">{eotm.name}</p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <span className="text-lg font-bold text-gray-800">{eotm.avgScore}</span>
+                                <span className="text-[9px] text-gray-400 block -mt-1">Score</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Analytics Section */}
+                    {analytics && (
+                        <div className="bg-white/80 backdrop-blur-lg p-3 rounded-2xl border border-white/50 shadow-md flex items-center justify-between divide-x divide-gray-100">
+                            <div className="flex-1 text-center pr-2">
+                                <p className="text-[9px] text-gray-400 uppercase font-bold mb-1">Rata-rata FOH</p>
+                                <p className="text-lg font-bold text-blue-600">{analytics.fohAverage}</p>
+                            </div>
+                            <div className="flex-1 text-center pl-2">
+                                <p className="text-[9px] text-gray-400 uppercase font-bold mb-1">Rata-rata BOH</p>
+                                <p className="text-lg font-bold text-orange-600">{analytics.bohAverage}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Owner Menu */}
                     <div className="grid grid-cols-2 gap-2">
-                        <PremiumGlassCard variant="compact" title="Laporan" subtitle="Input: Finance Manager" icon={DollarSign} onClick={() => onNavigate && onNavigate('reportFinancial')} themeColor="green" />
-                        <PremiumGlassCard variant="compact" title="Tren Pendapatan" subtitle="System Calculation" icon={Activity} onClick={() => onNavigate && onNavigate('reportRevenueCost')} themeColor="blue" />
-                        <PremiumGlassCard variant="compact" title="Operasional" subtitle="Input: Resto Manager" icon={Utensils} onClick={() => onNavigate && onNavigate('reportOperational')} themeColor="orange" />
-                        <PremiumGlassCard variant="compact" title="Kinerja Tim" subtitle="Input: HR Manager" icon={Users} onClick={() => onNavigate && onNavigate('reportHR')} themeColor="purple" />
-                        <PremiumGlassCard variant="compact" title="Monitoring Harian" subtitle="Input: Resto Manager" icon={Eye} onClick={() => onNavigate && onNavigate('hrDailyMonitorHub')} themeColor="teal" />
-                        <PremiumGlassCard variant="compact" title="Marketing" subtitle="Input: Marketing Manager" icon={Megaphone} onClick={() => onNavigate && onNavigate('reportMarketing')} themeColor="pink" />
-                    </div>
-
-                    {/* Performance Summary */}
-                    <div className="space-y-2.5">
-                        {eotm && (
-                            <div onClick={() => onNavigate && onNavigate('certificateDetail', { employee: eotm })} className="bg-gradient-to-r from-amber-50 to-white rounded-xl p-2.5 border border-amber-100 flex items-center justify-between cursor-pointer active:scale-98 transition-transform shadow-sm">
-                                <div className="flex items-center gap-3">
-                                    <div className="relative">
-                                        <img src={eotm.avatarUrl} className="w-7 h-7 rounded-full object-cover border border-orange-200" />
-                                        <div className="absolute -bottom-1 -right-1 bg-orange-500 text-white text-[8px] px-1 rounded-full font-bold">★</div>
-                                    </div>
-                                    <div>
-                                        <p className="text-[9px] font-bold text-orange-600 uppercase tracking-wider">Employee of the Month</p>
-                                        <p className="font-bold text-xs text-gray-800">{eotm.name}</p>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-xs font-bold text-gray-800">{eotm.avgScore}</span>
-                                    <span className="text-[8px] text-gray-400 block -mt-0.5">Score</span>
-                                </div>
-                            </div>
-                        )}
-
-                        {analytics && (
-                            <div className="bg-white/80 backdrop-blur-lg p-2.5 rounded-2xl border border-white/50 shadow-md flex items-center justify-between">
-                                <div className="flex-1 text-center border-r border-gray-100">
-                                    <p className="text-[9px] text-gray-400 uppercase font-bold mb-1">Rata-rata FOH</p>
-                                    <p className="text-lg font-bold text-blue-600">{analytics.fohAverage}</p>
-                                </div>
-                                <div className="flex-1 text-center">
-                                    <p className="text-[9px] text-gray-400 uppercase font-bold mb-1">Rata-rata BOH</p>
-                                    <p className="text-lg font-bold text-orange-600">{analytics.bohAverage}</p>
-                                </div>
-                            </div>
-                        )}
+                        <PremiumGlassCard variant="compact" title="Konfigurasi Bonus" subtitle="Atur Rate Poin" icon={Settings} onClick={() => onNavigate && onNavigate('bonusConfig')} themeColor="purple" />
                     </div>
                 </div>
             ) : user?.role === UserRole.SUPER_ADMIN ? (
@@ -272,6 +269,7 @@ export const AdminDashboardScreen: React.FC<AdminDashboardProps> = ({ onNavigate
                     <div className="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-100">
                         <h3 className="font-bold text-gray-800 mb-2.5 text-xs uppercase tracking-wider">Menu HRD</h3>
                         <div className="grid grid-cols-2 gap-2">
+                            <PremiumGlassCard title="Status Staff" subtitle="Kategori & Kontrak" icon={UserPlus} onClick={() => onNavigate && onNavigate('staffCategorization')} themeColor="blue" />
                             <PremiumGlassCard title="Payroll" subtitle="Slip Gaji" icon={Wallet} onClick={() => onNavigate && onNavigate('payslipGenerator')} themeColor="green" />
                             <PremiumGlassCard title="Shift" subtitle="Jadwal Staff" icon={Calendar} onClick={() => onNavigate && onNavigate('shiftScheduler')} themeColor="blue" />
                             <PremiumGlassCard title="SP/Coach" subtitle="Catatan HR" icon={AlertTriangle} onClick={() => onNavigate && onNavigate('hrSpCoachingForm')} themeColor="red" />
@@ -281,56 +279,53 @@ export const AdminDashboardScreen: React.FC<AdminDashboardProps> = ({ onNavigate
                         </div>
                     </div>
 
-                    {/* Stats & Reports */}
-                    <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-2">
-                            <button onClick={() => onNavigate && onNavigate('hrTrendReport')} className="p-2.5 bg-yellow-50 text-yellow-800 rounded-xl text-[10px] font-bold border border-yellow-100 flex items-center justify-center gap-2 hover:bg-yellow-100 shadow-sm">
-                                <TrendingUp size={14} /> Laporan Tren
-                            </button>
-                            <button onClick={() => onNavigate && onNavigate('hrTopPerformance')} className="p-2.5 bg-purple-50 text-purple-800 rounded-xl text-[10px] font-bold border border-purple-100 flex items-center justify-center gap-2 hover:bg-purple-100 shadow-sm">
-                                <Users size={14} /> Top Performance
-                            </button>
-                        </div>
-
-                        {loading ? (
-                            <div className="text-center py-4 text-xs text-gray-400">Loading stats...</div>
-                        ) : (
-                            <>
-                                {eotm && (
-                                    <div onClick={() => onNavigate && onNavigate('certificateDetail', { employee: eotm })} className="bg-gradient-to-br from-white to-amber-100 rounded-2xl p-3.5 border border-amber-200/50 flex items-center justify-between cursor-pointer active:scale-98 transition-transform hover:shadow-xl hover:-translate-y-1">
-                                        <div className="flex items-center gap-3">
-                                            <img src={eotm.avatarUrl} className="w-10 h-10 rounded-full object-cover border-2 border-orange-100 bg-gray-200" />
-                                            <div>
-                                                <p className="text-[9px] font-bold text-orange-600 uppercase tracking-wider">Employee of the Month</p>
-                                                <p className="font-bold text-sm text-gray-800">{eotm.name}</p>
-                                                <p className="text-[10px] text-gray-400 mt-0.5">Download Sertifikat</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="text-right">
-                                                <span className="text-lg font-bold text-gray-800">{eotm.avgScore}</span>
-                                                <span className="text-[9px] text-gray-400 block -mt-1">Score</span>
-                                            </div>
-                                            <ChevronRight size={18} className="text-gray-300" />
-                                        </div>
-                                    </div>
-                                )}
-
-                                {analytics && (
-                                    <div className="bg-white/80 backdrop-blur-lg p-3 rounded-xl border border-white/50 shadow-md flex divide-x divide-white/50">
-                                        <div className="flex-1 text-center">
-                                            <p className="text-[9px] text-gray-400 uppercase font-bold">Avg FOH</p>
-                                            <p className="text-lg font-bold text-blue-600">{analytics.fohAverage}</p>
-                                        </div>
-                                        <div className="flex-1 text-center">
-                                            <p className="text-[9px] text-gray-400 uppercase font-bold">Avg BOH</p>
-                                            <p className="text-lg font-bold text-orange-600">{analytics.bohAverage}</p>
-                                        </div>
-                                    </div>
-                                )}
-                            </>
-                        )}
+                    <div className="grid grid-cols-2 gap-2">
+                        <button onClick={() => onNavigate && onNavigate('hrTrendReport')} className="p-2.5 bg-yellow-50 text-yellow-800 rounded-xl text-[10px] font-bold border border-yellow-100 flex items-center justify-center gap-2 hover:bg-yellow-100 shadow-sm">
+                            <TrendingUp size={14} /> Laporan Tren
+                        </button>
+                        <button onClick={() => onNavigate && onNavigate('hrTopPerformance')} className="p-2.5 bg-purple-50 text-purple-800 rounded-xl text-[10px] font-bold border border-purple-100 flex items-center justify-center gap-2 hover:bg-purple-100 shadow-sm">
+                            <Users size={14} /> Top Performance
+                        </button>
                     </div>
+
+                    {loading ? (
+                        <div className="text-center py-4 text-xs text-gray-400">Loading stats...</div>
+                    ) : (
+                        <>
+                            {eotm && (
+                                <div onClick={() => onNavigate && onNavigate('certificateDetail', { employee: eotm })} className="bg-gradient-to-br from-white to-amber-100 rounded-2xl p-3.5 border border-amber-200/50 flex items-center justify-between cursor-pointer active:scale-98 transition-transform hover:shadow-xl hover:-translate-y-1">
+                                    <div className="flex items-center gap-3">
+                                        <img src={eotm.avatarUrl} className="w-10 h-10 rounded-full object-cover border-2 border-orange-100 bg-gray-200" />
+                                        <div>
+                                            <p className="text-[9px] font-bold text-orange-600 uppercase tracking-wider">Employee of the Month</p>
+                                            <p className="font-bold text-sm text-gray-800">{eotm.name}</p>
+                                            <p className="text-[10px] text-gray-400 mt-0.5">Download Sertifikat</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="text-right">
+                                            <span className="text-lg font-bold text-gray-800">{eotm.avgScore}</span>
+                                            <span className="text-[9px] text-gray-400 block -mt-1">Score</span>
+                                        </div>
+                                        <ChevronRight size={18} className="text-gray-300" />
+                                    </div>
+                                </div>
+                            )}
+
+                            {analytics && (
+                                <div className="bg-white/80 backdrop-blur-lg p-3 rounded-xl border border-white/50 shadow-md flex divide-x divide-white/50">
+                                    <div className="flex-1 text-center">
+                                        <p className="text-[9px] text-gray-400 uppercase font-bold">Avg FOH</p>
+                                        <p className="text-lg font-bold text-blue-600">{analytics.fohAverage}</p>
+                                    </div>
+                                    <div className="flex-1 text-center">
+                                        <p className="text-[9px] text-gray-400 uppercase font-bold">Avg BOH</p>
+                                        <p className="text-lg font-bold text-orange-600">{analytics.bohAverage}</p>
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
                 </div>
             )}
 

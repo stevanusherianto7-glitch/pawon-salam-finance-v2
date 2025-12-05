@@ -6,6 +6,7 @@ import { useStockOpnameStore } from '../../store/useStockOpnameStore';
 
 interface Props {
     onBack: () => void;
+    onNavigate?: (screen: string) => void;
     isReadOnly?: boolean;
 }
 

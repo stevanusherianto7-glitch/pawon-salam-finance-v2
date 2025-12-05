@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AttendanceLog, AttendanceStatus, WorkSchedule } from '../types';
 import { attendanceApi } from '../services/api';
+import { usePointStore } from './usePointStore';
 
 interface AttendanceState {
   todayLog: AttendanceLog | null;
@@ -53,8 +54,28 @@ export const useAttendanceStore = create<AttendanceState>()(
         set({ isLoading: true });
         try {
           // Logic to determine Late vs Present
+          // Logic to determine Late vs Present & Early Bird
           const now = new Date();
-          const isLate = now.getHours() > 9; // Late after 9:00 AM
+          const schedule = get().schedule;
+          let isLate = false;
+          let isEarlyBird = false;
+
+          if (schedule && schedule.startTime) {
+            const [startHour, startMinute] = schedule.startTime.split(':').map(Number);
+            const shiftStart = new Date(now);
+            shiftStart.setHours(startHour, startMinute, 0, 0);
+
+            // Check Late (> 10 mins tolerance)
+            const lateThreshold = new Date(shiftStart.getTime() + 10 * 60000);
+            if (now > lateThreshold) isLate = true;
+
+            // Check Early Bird (<= 30 mins before)
+            const earlyThreshold = new Date(shiftStart.getTime() - 30 * 60000);
+            if (now <= earlyThreshold) isEarlyBird = true;
+          } else {
+            // Fallback default 9:00 AM
+            isLate = now.getHours() > 9;
+          }
 
           const res = await attendanceApi.checkIn({
             employeeId,
@@ -68,6 +89,11 @@ export const useAttendanceStore = create<AttendanceState>()(
             set({ todayLog: res.data });
             // Refresh history
             get().fetchHistory(employeeId);
+
+            // Gamification Trigger: Early Bird
+            if (isEarlyBird) {
+              usePointStore.getState().addPoints(employeeId, 2, 'EARLY_BIRD', 'Early Bird Check-In (>30 mins early)');
+            }
           }
         } finally {
           set({ isLoading: false });

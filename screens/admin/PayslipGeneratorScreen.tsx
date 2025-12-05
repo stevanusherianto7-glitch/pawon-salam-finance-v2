@@ -4,6 +4,7 @@ import jsPDF from 'jspdf';
 import { ArrowLeft, ChevronDown, Trash2 } from 'lucide-react';
 import { GlassDatePicker } from '../../components/ui/GlassDatePicker';
 import { useEmployeeStore } from '../../store/employeeStore';
+import { useAttendanceStore } from '../../store/attendanceStore';
 import { UserRole, Employee, EmployeeArea } from '../../types';
 import { usePayslipFormStore } from '../../store/usePayslipFormStore';
 
@@ -165,6 +166,7 @@ const PayrollInput: React.FC<{
 export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
     const printRef = useRef<HTMLDivElement>(null);
     const { employees, fetchEmployees } = useEmployeeStore();
+    const { fetchHistory, history } = useAttendanceStore();
 
     // Persistent Store
     const { formData, setFormData, resetForm } = usePayslipFormStore();
@@ -185,6 +187,39 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
         const formattedMonth = selectedDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }).toUpperCase();
         setFormData({ month: formattedMonth });
     }, [selectedDate, setFormData]);
+
+    // WORKFLOW #1: Auto-Calculate Attendance
+    useEffect(() => {
+        if (formData.nik && history.length > 0) {
+            const monthIndex = selectedDate.getMonth();
+            const year = selectedDate.getFullYear();
+
+            const monthlyLogs = history.filter(log => {
+                const logDate = new Date(log.date);
+                return logDate.getMonth() === monthIndex && logDate.getFullYear() === year;
+            });
+
+            // Count Present or Late
+            const daysWorked = monthlyLogs.filter(l => l.status === 'PRESENT' || l.status === 'LATE').length;
+
+            // Calculate Overtime (Mock logic: > 9 hours = overtime)
+            let overtimeHours = 0;
+            monthlyLogs.forEach(log => {
+                if (log.checkInTime && log.checkOutTime) {
+                    const start = new Date(log.checkInTime).getTime();
+                    const end = new Date(log.checkOutTime).getTime();
+                    const hours = (end - start) / (1000 * 60 * 60);
+                    if (hours > 9) overtimeHours += Math.floor(hours - 9);
+                }
+            });
+
+            // Auto-update form
+            setFormData({
+                attendanceDays: daysWorked,
+                overtime: overtimeHours * 20000 // Rate: 20k/hour
+            });
+        }
+    }, [history, selectedDate, formData.nik, setFormData]);
 
     const handleReset = () => {
         if (window.confirm("Reset formulir? Data yang belum disimpan akan hilang.")) {
@@ -220,6 +255,9 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
         const employee = employees.find(emp => emp.id === empId);
 
         if (employee) {
+            // Trigger Workflow #1
+            fetchHistory(employee.id);
+
             // Infer Department and Status
             let department = 'Operasional';
             let status = 'Karyawan Tetap';
