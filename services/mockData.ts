@@ -1,4 +1,4 @@
-import { AttendanceLog, AttendanceStatus, DailyPerformanceSnapshot, Employee, EmployeeArea, Payslip, PerformanceReview, UserRole, LeaveRequest, LeaveType, LeaveStatus, ShiftAssignment, ShiftType, SHIFT_COLORS, AuditLog, SystemSetting, Message, MessageAudience } from "../types";
+import { AttendanceLog, AttendanceStatus, DailyPerformanceSnapshot, Employee, EmployeeArea, Payslip, PerformanceReview, UserRole, LeaveRequest, LeaveType, LeaveStatus, ShiftAssignment, ShiftType, SHIFT_COLORS, AuditLog, SystemSetting, Message, MessageAudience, EmploymentCategory } from "../types";
 
 // Helper to get dynamic "Today" date for mock purposes
 const getTodayStr = () => new Date().toISOString().split('T')[0];
@@ -20,6 +20,9 @@ export const MOCK_EMPLOYEES: Employee[] = [
     role: UserRole.SUPER_ADMIN,
     department: 'IT Support Sistem',
     area: EmployeeArea.FOH,
+    category: EmploymentCategory.PERMANENT,
+    joinedDate: '2023-01-01',
+    isActive: true,
     avatarUrl: 'https://ui-avatars.com/api/?name=Super+Admin&background=EF4444&color=fff',
     birthDate: '1990-01-01'
   },
@@ -35,11 +38,14 @@ export const MOCK_EMPLOYEES: Employee[] = [
     role: UserRole.BUSINESS_OWNER,
     department: 'Business Owner',
     area: EmployeeArea.FOH,
+    category: EmploymentCategory.PERMANENT,
+    joinedDate: '2023-01-01',
+    isActive: true,
     avatarUrl: 'https://ui-avatars.com/api/?name=Veronica+Dhian&background=E87722&color=fff',
     birthDate: '1980-05-20'
   },
   {
-    id: 'emp-003',
+    id: 'MGR-HRD-001', // Ana Jumnanik
     name: 'Ana Jumnanik',
     email: 'ana@pawonsalam.com',
     phone: '085640028589',
@@ -48,13 +54,16 @@ export const MOCK_EMPLOYEES: Employee[] = [
     role: UserRole.HR_MANAGER,
     department: 'Human Resources Manager',
     area: EmployeeArea.FOH,
+    category: EmploymentCategory.PERMANENT,
+    joinedDate: '2023-01-01',
+    isActive: true,
     avatarUrl: 'https://ui-avatars.com/api/?name=Ana+Jumnanik&background=E87722&color=fff',
     birthDate: '1985-03-15'
   },
 
   // --- MANAGERS ---
   {
-    id: 'emp-002',
+    id: 'MGR-FIN-001', // Boston Endi
     name: 'Boston Endi Sitompul',
     email: 'boston@pawonsalam.com',
     phone: '082312398289',
@@ -62,11 +71,14 @@ export const MOCK_EMPLOYEES: Employee[] = [
     role: UserRole.FINANCE_MANAGER,
     department: 'Finance Manager',
     area: EmployeeArea.FOH,
+    category: EmploymentCategory.PERMANENT,
+    joinedDate: '2023-01-01',
+    isActive: true,
     avatarUrl: 'https://ui-avatars.com/api/?name=Boston+Endi&background=random',
     birthDate: '1992-08-10'
   },
   {
-    id: 'emp-005',
+    id: 'MGR-OPR-001', // Wawan
     name: 'Wawan',
     email: 'herwandi@pawonsalam.com',
     phone: '085219481806',
@@ -74,11 +86,14 @@ export const MOCK_EMPLOYEES: Employee[] = [
     role: UserRole.RESTAURANT_MANAGER,
     department: 'Resto Manager',
     area: EmployeeArea.FOH,
+    category: EmploymentCategory.PERMANENT,
+    joinedDate: '2023-01-01',
+    isActive: true,
     avatarUrl: 'https://ui-avatars.com/api/?name=Wawan&background=random',
-    birthDate: getBirthdayToday(1990) // SET TO TODAY FOR DEMO
+    birthDate: getBirthdayToday(1990)
   },
   {
-    id: 'emp-mkt',
+    id: 'MGR-MKT-001', // Anto
     name: 'Anto',
     email: 'stepanus@pawonsalam.com',
     phone: '082125265827',
@@ -86,13 +101,16 @@ export const MOCK_EMPLOYEES: Employee[] = [
     role: UserRole.MARKETING_MANAGER,
     department: 'Marketing Manager',
     area: EmployeeArea.FOH,
+    category: EmploymentCategory.PERMANENT,
+    joinedDate: '2023-01-01',
+    isActive: true,
     avatarUrl: 'https://ui-avatars.com/api/?name=Anto&background=random',
     birthDate: '1993-11-22'
   },
 
   // --- BOH STAFF ---
   {
-    id: 'emp-006',
+    id: 'STF-KIT-12012401', // Ardian
     name: 'Ardian',
     email: 'ardian@pawonsalam.com',
     phone: '081313042461',
@@ -100,11 +118,14 @@ export const MOCK_EMPLOYEES: Employee[] = [
     role: UserRole.EMPLOYEE,
     department: 'Assisten Chef',
     area: EmployeeArea.BOH,
+    category: EmploymentCategory.PERMANENT,
+    joinedDate: '2024-12-01',
+    isActive: true,
     avatarUrl: 'https://ui-avatars.com/api/?name=Ardian&background=random',
     birthDate: '1998-07-12'
   },
   {
-    id: 'emp-008',
+    id: 'STF-KIT-01152501', // Imam
     name: 'Imam',
     email: 'imam@pawonsalam.com',
     phone: '083872098579',
@@ -112,6 +133,9 @@ export const MOCK_EMPLOYEES: Employee[] = [
     role: UserRole.EMPLOYEE,
     department: 'Cook Helper',
     area: EmployeeArea.BOH,
+    category: EmploymentCategory.PROBATION,
+    joinedDate: '2025-01-15',
+    isActive: true,
     avatarUrl: 'https://ui-avatars.com/api/?name=Imam&background=random',
     birthDate: '2000-02-28'
   },
@@ -126,8 +150,11 @@ export const MOCK_EMPLOYEES: Employee[] = [
     role: UserRole.EMPLOYEE,
     department: 'Waiter',
     area: EmployeeArea.FOH,
+    category: EmploymentCategory.DAILY_WORKER,
+    joinedDate: '2023-08-01',
+    isActive: true,
     avatarUrl: 'https://ui-avatars.com/api/?name=Farhan&background=random',
-    birthDate: getBirthdayToday(1999) // SET TO TODAY FOR DEMO
+    birthDate: getBirthdayToday(1999)
   },
   {
     id: 'emp-009',
@@ -138,6 +165,9 @@ export const MOCK_EMPLOYEES: Employee[] = [
     role: UserRole.EMPLOYEE,
     department: 'Waiter',
     area: EmployeeArea.FOH,
+    category: EmploymentCategory.DAILY_WORKER,
+    joinedDate: '2023-09-01',
+    isActive: true,
     avatarUrl: 'https://ui-avatars.com/api/?name=Fauzan&background=random',
     birthDate: '1999-09-09'
   },
@@ -150,6 +180,9 @@ export const MOCK_EMPLOYEES: Employee[] = [
     role: UserRole.EMPLOYEE,
     department: 'Waiter',
     area: EmployeeArea.FOH,
+    category: EmploymentCategory.DAILY_WORKER,
+    joinedDate: '2023-10-01',
+    isActive: true,
     avatarUrl: 'https://ui-avatars.com/api/?name=Andi&background=random',
     birthDate: '1996-12-12'
   }
@@ -158,7 +191,7 @@ export const MOCK_EMPLOYEES: Employee[] = [
 export const MOCK_ATTENDANCE: AttendanceLog[] = [
   {
     id: 'att-001',
-    employeeId: 'emp-002',
+    employeeId: 'MGR-FIN-001', // Boston
     date: new Date().toISOString().split('T')[0],
     checkInTime: new Date(new Date().setHours(8, 30)).toISOString(),
     status: AttendanceStatus.PRESENT,
@@ -167,7 +200,7 @@ export const MOCK_ATTENDANCE: AttendanceLog[] = [
   },
   {
     id: 'att-hist-1',
-    employeeId: 'emp-002',
+    employeeId: 'MGR-FIN-001', // Boston
     date: '2023-10-25',
     checkInTime: '2023-10-25T08:00:00.000Z',
     checkOutTime: '2023-10-25T17:00:00.000Z',
@@ -180,7 +213,7 @@ export const MOCK_ATTENDANCE: AttendanceLog[] = [
 export const MOCK_DAILY_SNAPSHOTS: DailyPerformanceSnapshot[] = [
   {
     id: 'ds-1',
-    employeeId: 'emp-006', // Ardian BOH
+    employeeId: 'STF-KIT-12012401', // Ardian
     attendanceLogId: 'att-prev-1',
     date: new Date().toISOString().split('T')[0],
     area: EmployeeArea.BOH,
@@ -208,7 +241,7 @@ export const MOCK_PERFORMANCE_REVIEWS: PerformanceReview[] = [
   {
     id: 'pr-1',
     employeeId: 'emp-007', // Farhan FOH
-    reviewerId: 'emp-005', // Manager
+    reviewerId: 'MGR-OPR-001', // Wawan (Resto Manager)
     periodMonth: 10,
     periodYear: 2023,
     area: EmployeeArea.FOH,
@@ -231,7 +264,7 @@ export const MOCK_PERFORMANCE_REVIEWS: PerformanceReview[] = [
 export const MOCK_PAYSLIPS: Payslip[] = [
   {
     id: 'slip-001',
-    employeeId: 'emp-006', // Ardian
+    employeeId: 'STF-KIT-12012401', // Ardian
     periodMonth: 10,
     periodYear: 2023,
     payDate: '2023-11-01',
@@ -254,7 +287,7 @@ export const MOCK_PAYSLIPS: Payslip[] = [
     isVisibleToEmployee: true,
     notesForEmployee: 'Terima kasih atas dedikasi Anda bulan ini!',
     notesInternalHr: 'Bonus performa included based on good checklist scores.',
-    createdByHrId: 'emp-003',
+    createdByHrId: 'MGR-HRD-001', // Ana
     createdAt: '2023-10-31T10:00:00Z',
     updatedAt: '2023-10-31T10:00:00Z'
   },
@@ -283,7 +316,7 @@ export const MOCK_PAYSLIPS: Payslip[] = [
     isVisibleToEmployee: false,
     notesForEmployee: '',
     notesInternalHr: '',
-    createdByHrId: 'emp-003',
+    createdByHrId: 'MGR-HRD-001', // Ana
     createdAt: '2023-11-25T10:00:00Z',
     updatedAt: '2023-11-25T10:00:00Z'
   }
@@ -310,12 +343,12 @@ export const MOCK_LEAVE_REQUESTS: LeaveRequest[] = [
   },
   {
     id: 'lr-003',
-    employeeId: 'emp-006',
+    employeeId: 'STF-KIT-12012401', // Ardian
     type: LeaveType.OTHER,
     startDate: '2023-11-20',
     endDate: '2023-11-20',
     reason: 'Mengurus STNK',
-    status: LeaveStatus.PENDING
+    status: LeaveStatus.PENDING_MANAGER
   }
 ];
 
@@ -408,24 +441,24 @@ export const MOCK_MESSAGES: Message[] = [
     content: 'Selamat pagi tim! Ingat, besok kita ada event catering outdoor besar di Balai Kota. Mohon semua manajer pastikan staff di bawahnya sudah briefing dan siap tempur. Semangat!',
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(), // 3 hours ago
     audience: MessageAudience.ALL_MANAGERS,
-    readBy: ['emp-005', 'emp-003'],
+    readBy: ['MGR-OPR-001', 'MGR-HRD-001'], // Wawan, Ana
     senderArea: EmployeeArea.MANAGEMENT
   },
   {
     id: 'msg-2',
-    senderId: 'emp-003', // Ana
+    senderId: 'MGR-HRD-001', // Ana
     senderName: 'Ana Jumnanik',
     senderAvatarUrl: 'https://ui-avatars.com/api/?name=Ana+Jumnanik&background=E87722&color=fff',
     senderRole: UserRole.HR_MANAGER,
     content: 'Perhatian untuk semua staff. Sehubungan dengan event besok, akan ada penyesuaian jadwal shift sore. Mohon cek jadwal terbaru yang sudah di-publish oleh Manajer Resto. Terima kasih.',
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
     audience: MessageAudience.ALL_STAFF,
-    readBy: ['emp-006', 'emp-008', 'emp-009', 'emp-010'],
+    readBy: ['STF-KIT-12012401', 'STF-KIT-01152501', 'emp-009', 'emp-010'], // Ardian, Imam, etc
     senderArea: EmployeeArea.MANAGEMENT
   },
   {
     id: 'msg-3',
-    senderId: 'emp-005', // Wawan
+    senderId: 'MGR-OPR-001', // Wawan
     senderName: 'Wawan',
     senderAvatarUrl: 'https://ui-avatars.com/api/?name=Wawan&background=random',
     senderRole: UserRole.RESTAURANT_MANAGER,
