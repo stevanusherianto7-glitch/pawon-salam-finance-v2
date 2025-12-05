@@ -19,14 +19,40 @@ const StaffCategorizationScreen: React.FC<Props> = ({ onBack }) => {
 
     // Filter logic
     const staffList = employees.filter(e => {
-        if (e.role === UserRole.SUPER_ADMIN) return false;
-
         const matchesSearch = e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             e.id.toLowerCase().includes(searchQuery.toLowerCase());
 
-        const matchesArea = filterDept === 'ALL' || e.area === filterDept;
+        let matchesCategory = true;
+        switch (filterDept) {
+            case 'ALL':
+                matchesCategory = true;
+                break;
+            case 'BUSINESS_OWNER':
+                matchesCategory = e.role === UserRole.BUSINESS_OWNER;
+                break;
+            case 'SUPER_ADMIN':
+                matchesCategory = e.role === UserRole.SUPER_ADMIN;
+                break;
+            case 'FOH':
+                matchesCategory = e.area === EmployeeArea.FOH;
+                break;
+            case 'BOH':
+                matchesCategory = e.area === EmployeeArea.BOH;
+                break;
+            case 'MANAGEMENT':
+                matchesCategory = [
+                    UserRole.RESTAURANT_MANAGER,
+                    UserRole.HR_MANAGER,
+                    UserRole.FINANCE_MANAGER,
+                    UserRole.MARKETING_MANAGER,
+                    UserRole.ADMIN
+                ].includes(e.role);
+                break;
+            default:
+                matchesCategory = true;
+        }
 
-        return matchesSearch && matchesArea;
+        return matchesSearch && matchesCategory;
     });
 
     const getCategoryColor = (cat: EmploymentCategory) => {
@@ -121,10 +147,12 @@ const StaffCategorizationScreen: React.FC<Props> = ({ onBack }) => {
                         onChange={(e) => setFilterDept(e.target.value)}
                         className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
                     >
-                        <option value="ALL">Semua Area</option>
-                        <option value={EmployeeArea.FOH}>Front of House</option>
-                        <option value={EmployeeArea.BOH}>Back of House</option>
-                        <option value={EmployeeArea.MANAGEMENT}>Management</option>
+                        <option value="ALL">Semua Kategori</option>
+                        <option value="BUSINESS_OWNER">Business Owner</option>
+                        <option value="SUPER_ADMIN">IT Support System</option>
+                        <option value="FOH">Front of House</option>
+                        <option value="BOH">Back of House</option>
+                        <option value="MANAGEMENT">Management</option>
                     </select>
                 </div>
             </div>
