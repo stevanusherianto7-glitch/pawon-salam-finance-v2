@@ -6,6 +6,22 @@ This file tracks all deployments to production.
 
 ---
 
+## [2025-12-05] Critical Fix: Force Remove Global Header
+**Status:** ✅ Pushed to Main (V2)
+**Commit:** Fix(Layout): Force Remove Global Header & Ghost Padding on Sub-Screens
+**Hash:** 8f8f966
+**URL:** https://pawon-salam-finance-v2.pages.dev
+
+### Summary
+Implemented a "Hard Delete" of the global header on sub-screens to eliminate the persistent white bar and ghost padding.
+
+### Key Changes
+*   **CSS Override:** Added `.hide-global-header` utility class to `index.css` for forced removal.
+*   **Ghost Padding Removal:**
+    *   `ProfileScreen.tsx`: Reduced `pt-16` (64px) to `pt-4` to remove the gap left by the missing header.
+    *   `CreatePayslip.tsx`: Changed `h-[calc(100vh-64px)]` to `h-screen` to reclaim the header space.
+*   **Logic Hardening:** Ensured `App.tsx` conditionally renders the header container only on `MAIN_SCREENS`.
+
 ## [2025-12-05] Refactor: Full Immersive Sub-Screens
 **Status:** ✅ Pushed to Main (V2)
 **Commit:** Refactor(Layout): Hide Global Header on Sub-Screens & Fix Back Navigation

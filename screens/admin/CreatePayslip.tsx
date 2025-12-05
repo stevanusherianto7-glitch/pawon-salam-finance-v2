@@ -317,7 +317,7 @@ export const CreatePayslip: React.FC<{ onBack?: () => void }> = ({ onBack }) => 
     const handleZoomOut = () => setScale(prev => Math.max(0.3, prev - 0.1));
 
     return (
-        <div className="h-[calc(100vh-64px)] bg-gray-50/50 flex flex-col print:bg-white print:h-auto print:overflow-visible" ref={containerRef}>
+        <div className="h-screen bg-gray-50/50 flex flex-col print:bg-white print:h-auto print:overflow-visible" ref={containerRef}>
             <style>
                 {`
                 @page {

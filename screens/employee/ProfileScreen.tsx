@@ -82,7 +82,7 @@ export const ProfileScreen = () => {
       <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
       <BackgroundPattern />
 
-      <div className="relative z-10 p-4 pt-16">
+      <div className="relative z-10 p-4 pt-4">
         <div className="relative bg-black/20 backdrop-blur-2xl border border-white/10 rounded-3xl p-5 shadow-2xl">
 
           <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">

@@ -65,6 +65,14 @@
 }
 
 @layer utilities {
+
+  /* FORCE HIDE GLOBAL HEADER */
+  .hide-global-header {
+    display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+
   .glass {
     background: rgba(255, 255, 255, 0.75);
     backdrop-filter: blur(16px);

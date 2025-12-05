@@ -263,7 +263,7 @@ const App = () => {
 
           {/* HEADER SECTION (Sticky Top) - Only on Main Dashboards */}
           {MAIN_SCREENS.includes(currentScreen) && (
-            <div className="z-50 sticky top-0 shrink-0 bg-gray-50/95 backdrop-blur-sm">
+            <div className={`z-50 sticky top-0 shrink-0 bg-gray-50/95 backdrop-blur-sm ${!MAIN_SCREENS.includes(currentScreen) ? 'hide-global-header' : ''}`}>
               <ImpersonationBanner />
               <SpecialNotificationBanner />
               <NavigationHeader currentScreen={currentScreen} onBack={handleBack} />
