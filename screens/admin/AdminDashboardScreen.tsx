@@ -63,21 +63,6 @@ export const AdminDashboardScreen: React.FC<AdminDashboardProps> = ({ onNavigate
                 if (logsRes?.success && logsRes.data) setLogs(logsRes.data);
             }
 
-            const birthdayRes = await employeeApi.getBirthdays();
-            if (birthdayRes.success && birthdayRes.data?.length) {
-                const othersBday = user ? birthdayRes.data.filter(e => e.id !== user.id) : birthdayRes.data;
-
-                if (othersBday.length > 0) {
-                    const othersIds = othersBday.map(e => e.id);
-                    const isDismissed = useNotificationStore.getState().checkBirthdayDismissal(othersIds);
-
-                    if (!isDismissed) {
-                        const names = othersBday.map(e => e.name.split(' ')[0]).join(' & ');
-                        const message = othersBday.length > 1 ? `🎂 Hari ini ${names} berulang tahun!` : `🎂 Hari ini ${names} berulang tahun! Ucapkan selamat!`;
-                        showSpecialNotification(message, 'birthday', { employeeIds: othersIds });
-                    }
-                }
-            }
             setLoading(false);
         }
         loadData();

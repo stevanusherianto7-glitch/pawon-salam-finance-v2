@@ -6,7 +6,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { useAttendanceStore } from '../../store/attendanceStore';
 import { usePerformanceStore } from '../../store/performanceStore';
-import { MapPin, LogOut, Clock, Camera, TrendingUp, Quote, Star, ChevronRight, FileText, ShieldCheck, DollarSign, Bell, RefreshCw, Banknote, ClipboardList, Trophy, Award, Cake, Gift, Users, Crown, LayoutGrid, ListTodo, MessageSquare, X } from 'lucide-react';
+import { MapPin, LogOut, Clock, Camera, TrendingUp, Quote, Star, ChevronRight, FileText, ShieldCheck, DollarSign, Bell, RefreshCw, Banknote, ClipboardList, Trophy, Award, Users, Crown, LayoutGrid, ListTodo, MessageSquare, X } from 'lucide-react';
 import { colors } from '../../theme/colors';
 import { calculateDistance, OFFICE_LOCATION, MAX_ALLOWED_DISTANCE } from '../../utils/locationUtils';
 import { getScoreColor, getScoreLabel } from '../../utils/scoreUtils';
@@ -41,7 +41,7 @@ export const EmployeeDashboardScreen: React.FC<DashboardProps> = ({ onNavigate }
   const [hasNewSchedule, setHasNewSchedule] = useState(false);
   const [eotm, setEotm] = useState<EmployeeOfTheMonth | null>(null);
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
-  const [todaysBirthdays, setTodaysBirthdays] = useState<Employee[]>([]);
+
   const [isFeedbackVisible, setIsFeedbackVisible] = useState(false);
 
   useEffect(() => {
@@ -68,28 +68,7 @@ export const EmployeeDashboardScreen: React.FC<DashboardProps> = ({ onNavigate }
       };
       loadTeamStats();
 
-      const checkBirthdays = async () => {
-        const res = await employeeApi.getBirthdays();
-        if (res.success && res.data && res.data.length > 0) {
-          setTodaysBirthdays(res.data);
-          const isMyBday = res.data.some(e => e.id === user.id);
-          const othersBday = res.data.filter(e => e.id !== user.id);
 
-          if (isMyBday) showNotification(`🎉 Selamat Ulang Tahun, ${user.name}! 🎂`, 'success', 8000);
-
-          if (othersBday.length > 0) {
-            const othersIds = othersBday.map(e => e.id);
-            const isDismissed = useNotificationStore.getState().checkBirthdayDismissal(othersIds);
-
-            if (!isDismissed) {
-              const names = othersBday.map(e => e.name.split(' ')[0]).join(' & ');
-              const message = othersBday.length > 1 ? `🎂 Hari ini ${names} berulang tahun!` : `🎂 Hari ini ${names} berulang tahun! Ucapkan selamat!`;
-              showSpecialNotification(message, 'birthday', { employeeIds: othersIds });
-            }
-          }
-        }
-      };
-      checkBirthdays();
 
       if (user.role === UserRole.EMPLOYEE) detectLocation();
       const d = new Date();
@@ -226,7 +205,7 @@ export const EmployeeDashboardScreen: React.FC<DashboardProps> = ({ onNavigate }
   const getTimeString = (dateStr?: string) => dateStr ? new Date(dateStr).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '--:--';
   const isLocationValid = currentDistance !== null && currentDistance <= MAX_ALLOWED_DISTANCE;
   const distanceLabel = currentDistance !== null ? `${Math.round(currentDistance)}m` : '...';
-  const isMyBirthday = todaysBirthdays.some(e => e.id === user?.id);
+
 
   return (
     <div className="bg-gray-50 pb-32 relative overflow-hidden min-h-screen">

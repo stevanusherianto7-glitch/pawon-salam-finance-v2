@@ -330,11 +330,8 @@ const StaffCategorizationScreen = ({ onBack }: { onBack?: () => void }) => {
                             </div>
                         ) : (
                             // Empty State / Placeholder for Desktop
-                            <div className="h-[400px] flex flex-col items-center justify-center text-center text-slate-400 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
-                                <Users className="w-12 h-12 opacity-20 mb-3" />
-                                <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wide">Select User</h3>
-                                <p className="text-xs text-slate-400 max-w-[200px]">Select a user from the list to view details.</p>
-                            </div>
+                            null
+
                         )}
                     </section>
                 </div>
