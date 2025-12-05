@@ -6,6 +6,17 @@ This file tracks all deployments to production.
 
 ---
 
+## [v1.6.2] - 2025-12-05 16:05
+**Status:** ❌ FAILED (NPM Registry Error 500)
+**Commit:** N/A (Retry of v1.6.1)
+**Changes:**
+- Attempted to retry deployment for v1.6.1.
+- Attempted to install wrangler locally.
+**Failure Reason:**
+- NPM Registry returned 500 Internal Server Error during `npx wrangler` and `npm install`.
+
+---
+
 ## [2025-12-05 13:28] - Critical Fix: Data Persistence Implementation
 **Status:** ✅ Pushed to Main (V2)
 **Commit:** Fix(State): Implement Data Persistence for Stock Opname & Payslip
@@ -338,5 +349,20 @@ Complete repository reset to resolve persistent submodule issues.
 
 **Verification:**
 - Built successfully.
-- Deployed to Cloudflare Pages.
+
+---
+
+## [v1.6.1] - 2025-12-05 15:55
+**Status:** ⚠️ PARTIAL SUCCESS (Git Pushed, Deploy Failed)
+**Commit:** `c1e6258`
+**Changes:**
+- **UI Polish (Login Screen)**:
+  - Removed double glass effect (single layer for form).
+  - Unified width constraints (`max-w-sm`) for perfect alignment.
+  - Fixed z-index and spacing issues to prevent overlap.
+
+**Verification:**
+- Built successfully.
+- **Deployment Failed:** Cloudflare deployment failed due to npm registry error (500). Please retry `npx wrangler pages deploy dist` manually later.
+
 
