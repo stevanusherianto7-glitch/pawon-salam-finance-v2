@@ -6,6 +6,7 @@ import { employeeApi } from '../services/api';
 interface EmployeeState {
   employees: Employee[];
   isLoading: boolean;
+  error: string | null;
   fetchEmployees: () => Promise<void>;
   addEmployee: (data: Omit<Employee, 'id' | 'avatarUrl'> & { id?: string }) => Promise<boolean>;
   updateEmployee: (id: string, data: Partial<Employee>) => Promise<boolean>;
@@ -75,6 +76,7 @@ export const useEmployeeStore = create<EmployeeState>()(
     (set, get) => ({
       employees: [],
       isLoading: false,
+      error: null,
 
       fetchEmployees: async () => {
         set({ isLoading: true });
@@ -90,6 +92,7 @@ export const useEmployeeStore = create<EmployeeState>()(
 
       addEmployee: async (data) => {
         set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
           // Generate Smart ID if not provided
           let newId = data.id;
@@ -110,7 +113,7 @@ export const useEmployeeStore = create<EmployeeState>()(
           };
 
           // Simulating API call
-          const res = await employeeApi.add(newEmployee);
+          const res = await employeeApi.addEmployee(newEmployee);
 
           if (res.success) {
             set((state) => ({
@@ -118,19 +121,20 @@ export const useEmployeeStore = create<EmployeeState>()(
             }));
             return true;
           }
-          return false;
-        } catch (error) {
+          throw new Error(res.message || "Gagal menyimpan data karyawan");
+        } catch (error: any) {
           console.error("Failed to add employee:", error);
-          return false;
+          set({ error: error.message || "Terjadi kesalahan sistem" });
+          throw error;
         } finally {
           set({ isLoading: false });
         }
       },
 
       updateEmployee: async (id, data) => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
-          const res = await employeeApi.update(id, data);
+          const res = await employeeApi.updateEmployee(id, data);
           if (res.success) {
             set((state) => ({
               employees: state.employees.map((emp) =>
@@ -139,10 +143,11 @@ export const useEmployeeStore = create<EmployeeState>()(
             }));
             return true;
           }
-          return false;
-        } catch (error) {
+          throw new Error(res.message || "Gagal mengupdate data karyawan");
+        } catch (error: any) {
           console.error("Failed to update employee:", error);
-          return false;
+          set({ error: error.message || "Terjadi kesalahan sistem" });
+          throw error;
         } finally {
           set({ isLoading: false });
         }

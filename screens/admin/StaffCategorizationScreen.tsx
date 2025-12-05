@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import {
     ArrowRight, Users, Filter, Search, Ban, CheckCircle,
-    AlertTriangle, Save
+    AlertTriangle, Save, ChevronDown
 } from 'lucide-react';
 import { useEmployeeStore } from '../../store/employeeStore';
 import { Employee, EmploymentCategory, UserRole, EmployeeArea } from '../../types';
 import { UserRowV2 } from './UserRowV2';
 
 // --- HEADER V2 ---
+// --- HEADER V2 (Redesigned) ---
 const UserManagementHeaderV2 = ({
     onBack,
     userCount,
@@ -18,70 +19,90 @@ const UserManagementHeaderV2 = ({
     showInactive,
     setShowInactive
 }: any) => {
+
+    // Helper to get display label for the dropdown
+    const getFilterLabel = () => {
+        switch (filterDept) {
+            case 'FOH': return 'Front of House';
+            case 'BOH': return 'Back of House';
+            case 'MANAGEMENT': return 'Management';
+            default: return 'All Divisions';
+        }
+    };
+
     return (
-        <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-slate-200 shadow-sm w-full">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 w-full">
-                {/* Title Row */}
-                <div className="flex items-center gap-3 w-full mb-4">
-                    {onBack && (
-                        <button onClick={onBack} className="md:hidden p-2 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
-                            <ArrowRight size={18} className="rotate-180" />
-                        </button>
-                    )}
-                    <div className="flex-1 min-w-0">
-                        <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-800 truncate leading-tight">
-                            User Management
-                        </h1>
-                        <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mt-1">
-                            {userCount} REGISTERED USERS • MASTER DATA
+        <header className="sticky top-0 z-30 px-4 py-4 bg-white/80 backdrop-blur-2xl border-b border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.03)] transition-all duration-300">
+            <div className="max-w-7xl mx-auto w-full">
+
+                {/* Top Row: Title */}
+                <div className="flex items-center justify-between mb-6">
+                    <div>
+                        <div className="flex items-center gap-3">
+                            {onBack && (
+                                <button onClick={onBack} className="md:hidden p-2 -ml-2 rounded-full text-slate-400 hover:bg-slate-100 transition-colors">
+                                    <ArrowRight size={20} className="rotate-180" />
+                                </button>
+                            )}
+                            <h1 className="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">User Management</h1>
+                        </div>
+                        <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mt-1 pl-1 md:pl-0">
+                            {userCount} Registered Users • Master Data
                         </p>
                     </div>
                 </div>
 
-                {/* Controls Row */}
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between w-full">
-                    {/* Search Input */}
-                    <div className="relative group w-full sm:max-w-xs">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Search className="h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                {/* Control Deck (Search + Filters) */}
+                <div className="flex flex-col gap-4">
+
+                    {/* 1. Search Bar (Full Width & Floating) */}
+                    <div className="relative group w-full">
+                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                            <Search className="w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                         </div>
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="block w-full pl-10 pr-3 py-2 bg-slate-100 border-none rounded-lg text-sm font-medium text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all"
-                            placeholder="Find user..."
+                            placeholder="Search employee by name or ID..."
+                            className="w-full pl-10 pr-4 py-3 bg-white/50 backdrop-blur-xl border border-white/40 shadow-sm focus-within:shadow-md focus-within:border-indigo-300 ring-1 ring-slate-200/50 focus:ring-2 focus:ring-indigo-500/20 rounded-2xl transition-all text-sm font-medium placeholder:text-slate-400"
                         />
                     </div>
 
-                    {/* Filters */}
-                    <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
-                        <div className="relative shrink-0">
+                    {/* 2. Filter Twins (50% - 50% Grid on Mobile) */}
+                    <div className="grid grid-cols-2 gap-3 w-full">
+
+                        {/* Division Dropdown (Trick: Native select hidden over custom UI) */}
+                        <div className="relative">
+                            <div className="flex items-center justify-between px-4 py-2.5 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-indigo-300 transition-all active:scale-[0.98] h-full cursor-pointer">
+                                <span className="text-xs font-semibold text-slate-600 truncate">{getFilterLabel()}</span>
+                                <ChevronDown className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
+                            </div>
                             <select
                                 value={filterDept}
                                 onChange={(e) => setFilterDept(e.target.value)}
-                                className="appearance-none pl-3 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 focus:outline-none focus:border-blue-500 cursor-pointer uppercase tracking-wide"
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                             >
                                 <option value="ALL">All Divisions</option>
                                 <option value="FOH">Front of House</option>
                                 <option value="BOH">Back of House</option>
                                 <option value="MANAGEMENT">Management</option>
                             </select>
-                            <Filter size={10} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                         </div>
 
-                        <label className="flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors shrink-0">
-                            <div className={`w-3.5 h-3.5 rounded flex items-center justify-center border ${showInactive ? 'bg-slate-800 border-slate-800' : 'border-slate-300 bg-white'}`}>
-                                {showInactive && <CheckCircle className="w-2.5 h-2.5 text-white" />}
-                            </div>
-                            <input
-                                type="checkbox"
-                                checked={showInactive}
-                                onChange={(e) => setShowInactive(e.target.checked)}
-                                className="hidden"
-                            />
-                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Inactive</span>
-                        </label>
+                        {/* Inactive Toggle (Button Style Pill) */}
+                        <button
+                            onClick={() => setShowInactive(!showInactive)}
+                            className={`flex items-center justify-center gap-2 px-4 py-2.5 border rounded-xl shadow-sm transition-all active:scale-[0.98] h-full ${showInactive
+                                    ? 'bg-rose-50 border-rose-200 text-rose-600'
+                                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                                }`}
+                        >
+                            <div className={`w-2 h-2 rounded-full shrink-0 ${showInactive ? 'bg-rose-500 animate-pulse' : 'bg-slate-300'}`} />
+                            <span className="text-xs font-semibold truncate">
+                                {showInactive ? 'Hide Inactive' : 'Show Inactive'}
+                            </span>
+                        </button>
+
                     </div>
                 </div>
             </div>

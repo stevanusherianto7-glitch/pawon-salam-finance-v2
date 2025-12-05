@@ -86,7 +86,7 @@ export const ShiftSchedulerScreen: React.FC<Props> = ({ onBack }) => {
     const isPublished = shifts.length > 0 && shifts.every(s => s.isPublished);
 
     // --- REVISI UTAMA: PRIVILEGE RESTO MANAGER ---
-    // Jika user adalah Resto Manager, dia TIDAK PERNAH Read Only (selalu bisa edit),
+    // Jika user adalah Restaurant Manager, dia TIDAK PERNAH Read Only (selalu bisa edit),
     // meskipun status jadwal sudah published.
     // User lain (HR, Owner, Staff) akan Read Only jika bukan manager atau jika status published (untuk staff).
     const isReadOnly = !isRestaurantManager;
@@ -316,7 +316,7 @@ export const ShiftSchedulerScreen: React.FC<Props> = ({ onBack }) => {
                                                         {shift ? (
                                                             <button
                                                                 onClick={() => {
-                                                                    // JIKA isReadOnly FALSE (Resto Manager), Buka Edit Form
+                                                                    // JIKA isReadOnly FALSE (Restaurant Manager), Buka Edit Form
                                                                     // JIKA isReadOnly TRUE (Staff/Owner), Buka View Modal
                                                                     if (!isReadOnly) setSelectedShift(shift);
                                                                     else setViewModalShift(shift);

@@ -84,7 +84,7 @@ export const MOCK_EMPLOYEES: Employee[] = [
     phone: '085219481806',
     pin: '123456',
     role: UserRole.RESTAURANT_MANAGER,
-    department: 'Resto Manager',
+    department: 'Restaurant Manager',
     area: EmployeeArea.FOH,
     category: EmploymentCategory.PERMANENT,
     joinedDate: '2023-01-01',
