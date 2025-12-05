@@ -322,3 +322,21 @@ Complete repository reset to resolve persistent submodule issues.
 *   **Fixes:** Submodule removal, Deployment scripts.
 
 ---
+
+## [v1.6.0] - 2025-12-05 15:40
+**Status:** ✅ SUCCESS
+**Commit:** `1989c8d`
+**Changes:**
+- **Employee Deactivation (Soft Delete)**:
+  - Added `isActive` field to Employee model.
+  - Implemented Deactivate/Reactivate UI in Staff Database.
+  - Filtered inactive employees from Payslip Generator, Shift Scheduler, and SP Input.
+  - Blocked login for inactive users.
+- **Refactoring**:
+  - Updated `ShiftSchedulerScreen` to use new filter.
+  - Updated `HRSpCoachingFormScreen` to use dropdown.
+
+**Verification:**
+- Built successfully.
+- Deployed to Cloudflare Pages.
+
