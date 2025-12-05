@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useEmployeeStore } from '../../store/employeeStore';
 import { colors } from '../../theme/colors';
 import { Search, Award, ChevronLeft, User, Briefcase } from 'lucide-react';
-import { Employee } from '../../types';
+import { Employee, UserRole } from '../../types';
 
 interface Props {
     onBack: () => void;
@@ -17,10 +17,24 @@ export const CertificateManager: React.FC<Props> = ({ onBack, onSelectEmployee }
         fetchEmployees();
     }, []);
 
-    const filteredEmployees = employees.filter(e =>
-        e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        e.department.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredEmployees = employees.filter(e => {
+        // 1. Blacklist Logic: Exclude Bosses
+        const forbiddenRoles = [
+            UserRole.SUPER_ADMIN,
+            UserRole.BUSINESS_OWNER,
+            UserRole.HR_MANAGER,
+            UserRole.FINANCE_MANAGER,
+            UserRole.RESTAURANT_MANAGER,
+            UserRole.MARKETING_MANAGER,
+            UserRole.ADMIN
+        ];
+
+        if (forbiddenRoles.includes(e.role)) return false;
+
+        // 2. Search Logic
+        return e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            e.department.toLowerCase().includes(searchTerm.toLowerCase());
+    });
 
     return (
         <div className="bg-gray-50 min-h-screen pb-24">
@@ -81,10 +95,12 @@ export const CertificateManager: React.FC<Props> = ({ onBack, onSelectEmployee }
 
                             <button
                                 onClick={() => onSelectEmployee(emp)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-orange-600 rounded-lg text-[10px] font-bold border border-orange-100 hover:bg-orange-100 active:scale-95 transition-all"
+                                className="group relative flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-amber-50 to-orange-100/50 border border-orange-200/60 rounded-xl shadow-sm hover:shadow-md hover:border-orange-300 transition-all active:scale-95 shrink-0"
                             >
-                                <Award size={14} />
-                                Buat Sertifikat
+                                <Award className="w-4 h-4 text-orange-500 group-hover:scale-110 transition-transform" />
+                                <span className="text-xs font-bold text-orange-800 tracking-wide whitespace-nowrap">
+                                    Beri Penghargaan
+                                </span>
                             </button>
                         </div>
                     ))
