@@ -89,7 +89,12 @@ export const useEmployeeStore = create<EmployeeState>()(
           const currentCount = get().employees.length + 1;
           const newId = generateSmartId(data.role, data.category, data.area, currentCount);
 
-          const newEmployee = { ...data, id: newId, avatarUrl: `https://ui-avatars.com/api/?name=${data.name}&background=random` };
+          const newEmployee = {
+            ...data,
+            id: newId,
+            isActive: true, // Default to active
+            avatarUrl: `https://ui-avatars.com/api/?name=${data.name}&background=random`
+          };
 
           const res = await employeeApi.addEmployee(newEmployee);
           if (res.success && res.data) {
@@ -137,7 +142,8 @@ export const useEmployeeStore = create<EmployeeState>()(
             area: EmployeeArea.MANAGEMENT,
             category: EmploymentCategory.PERMANENT,
             joinedDate: '2023-01-01',
-            avatarUrl: 'https://ui-avatars.com/api/?name=Dr+Veronica&background=0D8ABC&color=fff'
+            avatarUrl: 'https://ui-avatars.com/api/?name=Dr+Veronica&background=0D8ABC&color=fff',
+            isActive: true
           },
           {
             id: 'SYS-ADMIN-25-001',
@@ -148,7 +154,8 @@ export const useEmployeeStore = create<EmployeeState>()(
             area: EmployeeArea.MANAGEMENT,
             category: EmploymentCategory.PERMANENT,
             joinedDate: '2023-01-01',
-            avatarUrl: 'https://ui-avatars.com/api/?name=IT+Support&background=333&color=fff'
+            avatarUrl: 'https://ui-avatars.com/api/?name=IT+Support&background=333&color=fff',
+            isActive: true
           },
           {
             id: 'MGR-HRD-25001',
@@ -159,7 +166,8 @@ export const useEmployeeStore = create<EmployeeState>()(
             area: EmployeeArea.MANAGEMENT,
             category: EmploymentCategory.PERMANENT,
             joinedDate: '2023-02-15',
-            avatarUrl: 'https://ui-avatars.com/api/?name=Stepanus+Herianto&background=D7263D&color=fff'
+            avatarUrl: 'https://ui-avatars.com/api/?name=Stepanus+Herianto&background=D7263D&color=fff',
+            isActive: true
           },
           {
             id: 'MGR-OPS-25001',
@@ -170,7 +178,8 @@ export const useEmployeeStore = create<EmployeeState>()(
             area: EmployeeArea.MANAGEMENT,
             category: EmploymentCategory.PERMANENT,
             joinedDate: '2023-03-10',
-            avatarUrl: 'https://ui-avatars.com/api/?name=PB+Herwandi&background=F46036&color=fff'
+            avatarUrl: 'https://ui-avatars.com/api/?name=PB+Herwandi&background=F46036&color=fff',
+            isActive: true
           },
           {
             id: 'MGR-FIN-25001',
@@ -181,7 +190,8 @@ export const useEmployeeStore = create<EmployeeState>()(
             area: EmployeeArea.MANAGEMENT,
             category: EmploymentCategory.PERMANENT,
             joinedDate: '2023-03-15',
-            avatarUrl: 'https://ui-avatars.com/api/?name=Boston+Endi&background=2E294E&color=fff'
+            avatarUrl: 'https://ui-avatars.com/api/?name=Boston+Endi&background=2E294E&color=fff',
+            isActive: true
           },
           {
             id: 'MGR-MKT-25001',
@@ -192,7 +202,8 @@ export const useEmployeeStore = create<EmployeeState>()(
             area: EmployeeArea.MANAGEMENT,
             category: EmploymentCategory.PERMANENT,
             joinedDate: '2023-04-01',
-            avatarUrl: 'https://ui-avatars.com/api/?name=Marketing+Lead&background=1B998B&color=fff'
+            avatarUrl: 'https://ui-avatars.com/api/?name=Marketing+Lead&background=1B998B&color=fff',
+            isActive: true
           },
           {
             id: 'EMP-BOH-25001',
@@ -203,7 +214,8 @@ export const useEmployeeStore = create<EmployeeState>()(
             area: EmployeeArea.BOH,
             category: EmploymentCategory.PERMANENT,
             joinedDate: '2023-04-01',
-            avatarUrl: 'https://ui-avatars.com/api/?name=Joko+Susilo&background=2E294E&color=fff'
+            avatarUrl: 'https://ui-avatars.com/api/?name=Joko+Susilo&background=2E294E&color=fff',
+            isActive: true
           },
           {
             id: 'DW-FOH-25001',
@@ -214,7 +226,8 @@ export const useEmployeeStore = create<EmployeeState>()(
             area: EmployeeArea.FOH,
             category: EmploymentCategory.DAILY_WORKER,
             joinedDate: '2023-05-20',
-            avatarUrl: 'https://ui-avatars.com/api/?name=Rina+Kartika&background=1B998B&color=fff'
+            avatarUrl: 'https://ui-avatars.com/api/?name=Rina+Kartika&background=1B998B&color=fff',
+            isActive: true
           }
         ];
         set({ employees: dummyEmployees });

@@ -240,6 +240,8 @@ export const PayslipGeneratorScreen: React.FC<Props> = ({ onBack }) => {
         const staff: Employee[] = [];
 
         employees.forEach(emp => {
+            if (emp.isActive === false) return; // Skip inactive employees
+
             if ([UserRole.HR_MANAGER, UserRole.RESTAURANT_MANAGER, UserRole.FINANCE_MANAGER, UserRole.MARKETING_MANAGER, UserRole.BUSINESS_OWNER, UserRole.SUPER_ADMIN].includes(emp.role)) {
                 management.push(emp);
             } else {

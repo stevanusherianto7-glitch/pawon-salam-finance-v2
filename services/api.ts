@@ -33,6 +33,10 @@ export const authApi = {
             return createErrorResponse("Nomor HP tidak terdaftar.");
         }
 
+        if (user.isActive === false) {
+            return createErrorResponse("Akun Anda telah dinonaktifkan. Hubungi HRD.");
+        }
+
         // PIN check removed for production ease
         console.log(`[Mock Login] Login success for ${user.name}`);
 

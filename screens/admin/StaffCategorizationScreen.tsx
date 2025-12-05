@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useEmployeeStore } from '../../store/employeeStore';
 import { Employee, EmploymentCategory, UserRole, EmployeeArea } from '../../types';
-import { Users, ArrowRight, Save, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Users, ArrowRight, Save, AlertTriangle, CheckCircle, MoreVertical, Ban, RefreshCw, X } from 'lucide-react';
 
 interface Props {
     onBack?: () => void;
@@ -16,6 +16,12 @@ const StaffCategorizationScreen: React.FC<Props> = ({ onBack }) => {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [filterDept, setFilterDept] = useState<string>('ALL');
+    const [showInactive, setShowInactive] = useState(false);
+
+    // Deactivation Modal State
+    const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false);
+    const [deactivationReason, setDeactivationReason] = useState('');
+    const [employeeToDeactivate, setEmployeeToDeactivate] = useState<Employee | null>(null);
 
     // Filter logic
     const staffList = employees.filter(e => {
@@ -52,7 +58,9 @@ const StaffCategorizationScreen: React.FC<Props> = ({ onBack }) => {
                 matchesCategory = true;
         }
 
-        return matchesSearch && matchesCategory;
+        const matchesActive = showInactive ? true : e.isActive !== false; // Default true if undefined
+
+        return matchesSearch && matchesCategory && matchesActive;
     });
 
     const getCategoryColor = (cat: EmploymentCategory) => {
@@ -80,8 +88,8 @@ const StaffCategorizationScreen: React.FC<Props> = ({ onBack }) => {
 
         const generateNewId = (category: EmploymentCategory, area: EmployeeArea, oldId: string) => {
             const parts = oldId.split('-');
-            if (parts.length === 3) {
-                const seqPart = parts[2]; // 25008
+            if (parts.length >= 3) {
+                const seqPart = parts[parts.length - 1]; // Last part is sequence
 
                 let prefix = 'EMP';
                 if (category === EmploymentCategory.PROBATION) prefix = 'PRO';
@@ -91,7 +99,11 @@ const StaffCategorizationScreen: React.FC<Props> = ({ onBack }) => {
                 if (selectedEmployee.area === EmployeeArea.FOH) deptCode = 'FOH';
                 if (selectedEmployee.area === EmployeeArea.BOH) deptCode = 'BOH';
 
-                return `${prefix}-${deptCode}-${seqPart}`;
+                // Maintain year if present
+                const year = new Date().getFullYear().toString().slice(-2);
+
+                // Simple reconstruction based on new logic
+                return `${prefix}-${deptCode}-${year}${seqPart.slice(-3)}`;
             }
             return oldId;
         };
@@ -115,6 +127,50 @@ const StaffCategorizationScreen: React.FC<Props> = ({ onBack }) => {
         setIsProcessing(false);
     };
 
+    const handleDeactivateClick = (e: React.MouseEvent, employee: Employee) => {
+        e.stopPropagation();
+        setEmployeeToDeactivate(employee);
+        setIsDeactivateModalOpen(true);
+    };
+
+    const handleConfirmDeactivate = async () => {
+        if (!employeeToDeactivate) return;
+
+        setIsProcessing(true);
+        const success = await updateEmployee(employeeToDeactivate.id, {
+            isActive: false,
+            deactivationDate: new Date().toISOString().split('T')[0],
+            deactivationReason: deactivationReason || 'Resign'
+        });
+
+        if (success) {
+            setSuccessMessage(`Akun ${employeeToDeactivate.name} berhasil dinonaktifkan.`);
+            setIsDeactivateModalOpen(false);
+            setEmployeeToDeactivate(null);
+            setDeactivationReason('');
+            setTimeout(() => setSuccessMessage(null), 3000);
+        }
+        setIsProcessing(false);
+    };
+
+    const handleReactivate = async (e: React.MouseEvent, employee: Employee) => {
+        e.stopPropagation();
+        if (!window.confirm(`Aktifkan kembali akun ${employee.name}?`)) return;
+
+        setIsProcessing(true);
+        const success = await updateEmployee(employee.id, {
+            isActive: true,
+            deactivationDate: undefined,
+            deactivationReason: undefined
+        });
+
+        if (success) {
+            setSuccessMessage(`Akun ${employee.name} berhasil diaktifkan kembali.`);
+            setTimeout(() => setSuccessMessage(null), 3000);
+        }
+        setIsProcessing(false);
+    };
+
     return (
         <div className="p-6 pb-24 space-y-6 min-h-screen bg-gray-50/50">
             <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
@@ -131,7 +187,7 @@ const StaffCategorizationScreen: React.FC<Props> = ({ onBack }) => {
                 </div>
 
                 {/* Search & Filter Controls */}
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3 items-center">
                     <div className="relative">
                         <input
                             type="text"
@@ -154,6 +210,16 @@ const StaffCategorizationScreen: React.FC<Props> = ({ onBack }) => {
                         <option value="BOH">Back of House</option>
                         <option value="MANAGEMENT">Management</option>
                     </select>
+
+                    <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+                        <input
+                            type="checkbox"
+                            checked={showInactive}
+                            onChange={(e) => setShowInactive(e.target.checked)}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        Tampilkan Non-Aktif
+                    </label>
                 </div>
             </div>
 
@@ -180,15 +246,23 @@ const StaffCategorizationScreen: React.FC<Props> = ({ onBack }) => {
                                     setSelectedEmployee(employee);
                                     setNewCategory(employee.category);
                                 }}
-                                className={`bg-white p-4 rounded-xl border transition-all cursor-pointer hover:shadow-md ${selectedEmployee?.id === employee.id ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-100 shadow-sm'}`}
+                                className={`bg-white p-4 rounded-xl border transition-all cursor-pointer hover:shadow-md ${selectedEmployee?.id === employee.id ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-100 shadow-sm'} ${!employee.isActive ? 'opacity-75 bg-gray-50' : ''}`}
                             >
                                 <div className="flex justify-between items-start">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-full bg-gray-100 overflow-hidden">
-                                            <img src={employee.avatarUrl || `https://ui-avatars.com/api/?name=${employee.name}`} alt={employee.name} className="w-full h-full object-cover" />
+                                        <div className="w-12 h-12 rounded-full bg-gray-100 overflow-hidden relative">
+                                            <img src={employee.avatarUrl || `https://ui-avatars.com/api/?name=${employee.name}`} alt={employee.name} className={`w-full h-full object-cover ${!employee.isActive ? 'grayscale' : ''}`} />
+                                            {!employee.isActive && (
+                                                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                                    <Ban className="text-white w-6 h-6" />
+                                                </div>
+                                            )}
                                         </div>
                                         <div>
-                                            <h3 className="font-semibold text-gray-900">{employee.name}</h3>
+                                            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                                                {employee.name}
+                                                {!employee.isActive && <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">Non-Aktif</span>}
+                                            </h3>
                                             <div className="flex items-center gap-2 text-sm text-gray-500">
                                                 <span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded">{employee.id}</span>
                                                 <span>•</span>
@@ -196,9 +270,33 @@ const StaffCategorizationScreen: React.FC<Props> = ({ onBack }) => {
                                             </div>
                                         </div>
                                     </div>
-                                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getCategoryColor(employee.category)}`}>
-                                        {getCategoryLabel(employee.category)}
-                                    </span>
+
+                                    <div className="flex items-center gap-2">
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getCategoryColor(employee.category)}`}>
+                                            {getCategoryLabel(employee.category)}
+                                        </span>
+
+                                        {/* Action Menu Trigger - Just direct buttons for now for simplicity and speed */}
+                                        <div className="flex gap-1">
+                                            {employee.isActive !== false ? (
+                                                <button
+                                                    onClick={(e) => handleDeactivateClick(e, employee)}
+                                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                    title="Nonaktifkan Akun"
+                                                >
+                                                    <Ban size={18} />
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={(e) => handleReactivate(e, employee)}
+                                                    className="p-2 text-gray-400 hover:text-green-500 hover:bg-green-50 rounded-lg transition-colors"
+                                                    title="Aktifkan Kembali"
+                                                >
+                                                    <RefreshCw size={18} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         ))
@@ -216,6 +314,13 @@ const StaffCategorizationScreen: React.FC<Props> = ({ onBack }) => {
                                     <label className="text-xs font-medium text-gray-500 uppercase">Current Status</label>
                                     <div className="font-medium text-gray-900 mt-1">{getCategoryLabel(selectedEmployee.category)}</div>
                                     <div className="text-xs text-gray-400 mt-1">ID: {selectedEmployee.id}</div>
+                                    {selectedEmployee.isActive === false && (
+                                        <div className="mt-2 pt-2 border-t border-gray-200">
+                                            <div className="text-xs text-red-500 font-medium">Status: Non-Aktif</div>
+                                            <div className="text-xs text-gray-500">Sejak: {selectedEmployee.deactivationDate}</div>
+                                            <div className="text-xs text-gray-500">Alasan: {selectedEmployee.deactivationReason}</div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">
@@ -245,7 +350,7 @@ const StaffCategorizationScreen: React.FC<Props> = ({ onBack }) => {
 
                                 <button
                                     onClick={handlePromote}
-                                    disabled={isProcessing || !newCategory || newCategory === selectedEmployee.category}
+                                    disabled={isProcessing || !newCategory || newCategory === selectedEmployee.category || selectedEmployee.isActive === false}
                                     className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
                                 >
                                     {isProcessing ? 'Menyimpan...' : (
@@ -255,6 +360,11 @@ const StaffCategorizationScreen: React.FC<Props> = ({ onBack }) => {
                                         </>
                                     )}
                                 </button>
+                                {selectedEmployee.isActive === false && (
+                                    <p className="text-xs text-center text-red-500">
+                                        Karyawan non-aktif tidak dapat diubah statusnya. Aktifkan kembali terlebih dahulu.
+                                    </p>
+                                )}
                             </div>
                         </div>
                     ) : (
@@ -265,6 +375,61 @@ const StaffCategorizationScreen: React.FC<Props> = ({ onBack }) => {
                     )}
                 </div>
             </div>
+
+            {/* Deactivation Modal */}
+            {isDeactivateModalOpen && employeeToDeactivate && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl animate-in zoom-in-95">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center gap-3 text-red-600">
+                                <div className="p-2 bg-red-100 rounded-full">
+                                    <AlertTriangle size={24} />
+                                </div>
+                                <h3 className="text-lg font-bold">Nonaktifkan Akun?</h3>
+                            </div>
+                            <button onClick={() => setIsDeactivateModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <p className="text-gray-600 mb-4">
+                            Anda yakin ingin menonaktifkan akun <strong>{employeeToDeactivate.name}</strong>?
+                            Akun akan terkunci dan tidak muncul di sistem aktif.
+                        </p>
+
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Alasan Penonaktifan</label>
+                            <select
+                                value={deactivationReason}
+                                onChange={(e) => setDeactivationReason(e.target.value)}
+                                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                            >
+                                <option value="">Pilih Alasan...</option>
+                                <option value="Resign">Resign (Mengundurkan Diri)</option>
+                                <option value="Terminated">Terminated (Diberhentikan)</option>
+                                <option value="Retired">Pensiun</option>
+                                <option value="Other">Lainnya</option>
+                            </select>
+                        </div>
+
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setIsDeactivateModalOpen(false)}
+                                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={handleConfirmDeactivate}
+                                disabled={!deactivationReason || isProcessing}
+                                className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+                            >
+                                {isProcessing ? 'Memproses...' : 'Nonaktifkan Akun'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

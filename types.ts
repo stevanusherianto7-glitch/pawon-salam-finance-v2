@@ -109,6 +109,9 @@ export interface Employee {
   joinedDate: string; // YYYY-MM-DD
   avatarUrl?: string;
   birthDate?: string; // YYYY-MM-DD
+  isActive: boolean; // Default true
+  deactivationDate?: string; // YYYY-MM-DD
+  deactivationReason?: string;
 }
 
 export interface WorkSchedule {

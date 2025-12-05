@@ -104,7 +104,7 @@ export const ShiftSchedulerScreen: React.FC<Props> = ({ onBack }) => {
         fetchMonthlyShifts(month, year);
     }, [month, year]);
 
-    const schedulableEmployees = employees.filter(e => e.role === UserRole.EMPLOYEE || e.role === UserRole.RESTAURANT_MANAGER);
+    const schedulableEmployees = employees.filter(e => (e.role === UserRole.EMPLOYEE || e.role === UserRole.RESTAURANT_MANAGER) && e.isActive !== false);
 
     const daysInMonth = new Date(year, month, 0).getDate();
     const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);

@@ -1,30 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { colors } from '../../theme/colors';
 import { performanceApi } from '../../services/api';
-import { ArrowLeft, Users, FileText, Save } from 'lucide-react';
+import { useEmployeeStore } from '../../store/employeeStore';
+import { ArrowLeft, Users, FileText, Save, ChevronDown } from 'lucide-react';
 
 interface Props {
   onBack: () => void;
 }
 
 export const HRSpCoachingFormScreen: React.FC<Props> = ({ onBack }) => {
+  const { employees, fetchEmployees } = useEmployeeStore();
   const [spType, setSpType] = useState('SP1');
   const [spDesc, setSpDesc] = useState('');
-  const [spEmpName, setSpEmpName] = useState('');
+  const [selectedEmpId, setSelectedEmpId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (employees.length === 0) {
+      fetchEmployees();
+    }
+  }, [employees.length, fetchEmployees]);
+
+  // Filter active employees only
+  const activeEmployees = employees.filter(e => e.isActive !== false);
+
   const handleSaveSP = async () => {
-    if (!spEmpName || !spDesc) {
-      alert("Mohon lengkapi nama karyawan dan keterangan.");
+    if (!selectedEmpId || !spDesc) {
+      alert("Mohon pilih karyawan dan lengkapi keterangan.");
       return;
     }
     setIsSubmitting(true);
-    // Mock empId generation for now since we only have name input
-    const mockEmpId = spEmpName.toLowerCase().replace(/\s+/g, '-');
-    await performanceApi.saveHRRecord({ type: spType, desc: spDesc, empId: mockEmpId });
+    await performanceApi.saveHRRecord({ type: spType, desc: spDesc, empId: selectedEmpId });
     setIsSubmitting(false);
     alert('Catatan HR Tersimpan');
-    setSpEmpName('');
+    setSelectedEmpId('');
     setSpDesc('');
     onBack();
   };
@@ -51,13 +60,17 @@ export const HRSpCoachingFormScreen: React.FC<Props> = ({ onBack }) => {
               <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Nama Karyawan</label>
               <div className="relative">
                 <Users size={14} className="absolute left-3 top-3 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Cari nama karyawan..."
-                  className="w-full p-2.5 pl-9 border rounded-xl text-xs bg-gray-50 outline-none focus:border-orange-500 transition-colors"
-                  value={spEmpName}
-                  onChange={(e) => setSpEmpName(e.target.value)}
-                />
+                <select
+                  className="w-full p-2.5 pl-9 pr-8 border rounded-xl text-xs bg-gray-50 outline-none focus:border-orange-500 transition-colors appearance-none"
+                  value={selectedEmpId}
+                  onChange={(e) => setSelectedEmpId(e.target.value)}
+                >
+                  <option value="">Pilih Karyawan...</option>
+                  {activeEmployees.map(emp => (
+                    <option key={emp.id} value={emp.id}>{emp.name} - {emp.department}</option>
+                  ))}
+                </select>
+                <ChevronDown size={14} className="absolute right-3 top-3 text-gray-400 pointer-events-none" />
               </div>
             </div>
 
@@ -66,7 +79,7 @@ export const HRSpCoachingFormScreen: React.FC<Props> = ({ onBack }) => {
               <div className="relative">
                 <FileText size={14} className="absolute left-3 top-3 text-gray-400" />
                 <select
-                  className="w-full p-2.5 pl-9 border rounded-xl text-xs bg-gray-50 outline-none focus:border-orange-500 appearance-none"
+                  className="w-full p-2.5 pl-9 pr-8 border rounded-xl text-xs bg-gray-50 outline-none focus:border-orange-500 appearance-none"
                   value={spType}
                   onChange={(e) => setSpType(e.target.value)}
                 >
@@ -75,6 +88,7 @@ export const HRSpCoachingFormScreen: React.FC<Props> = ({ onBack }) => {
                   <option value="SP3">Surat Peringatan 3</option>
                   <option value="COACHING">Coaching / Counseling</option>
                 </select>
+                <ChevronDown size={14} className="absolute right-3 top-3 text-gray-400 pointer-events-none" />
               </div>
             </div>
 
